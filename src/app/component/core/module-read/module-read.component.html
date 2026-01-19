@@ -1,0 +1,55 @@
+<div class="reader">
+
+  <!-- TOP BAR -->
+  <header class="reader-header">
+    <button class="back" (click)="backToPreview()">← Back</button>
+    <span class="title">{{ moduleTitle }}</span>
+    <button class="exit" (click)="backToModules()">Exit</button>
+  </header>
+
+  <!-- CONTENT -->
+  <article class="content fade-in">
+
+    <h1>Introduction</h1>
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+      tempor incididunt ut labore et dolore magna aliqua.
+    </p>
+
+    <p>
+      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+      ut aliquip ex ea commodo consequat.
+    </p>
+
+    <h2>Core Concepts</h2>
+    <p>
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+      dolore eu fugiat nulla pariatur.
+    </p>
+
+    <p>
+      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+      deserunt mollit anim id est laborum.
+    </p>
+
+    <h2>Best Practices</h2>
+    <p>
+      Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam
+      varius, turpis et commodo pharetra.
+    </p>
+
+    <p>
+      Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod
+      turpis.
+    </p>
+
+  </article>
+    <!-- QUIZ PROMPT -->
+    <div class="quiz-prompt">
+    <h3>Ready to test what you learned?</h3>
+    <p>Take a short quiz to check your understanding of this module.</p>
+
+    <button class="quiz-btn" (click)="goToQuiz()">
+        Take Quiz
+    </button>
+</div>

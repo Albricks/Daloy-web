@@ -1,0 +1,77 @@
+<div class="modules-page">
+
+  <!-- Header -->
+  <header class="page-header">
+    <h1>Modules</h1>
+    <p><b>Browse and manage your learning modules.</b></p>
+  </header>
+
+  <!-- Controls -->
+  <section class="controls">
+    <input type="text" placeholder="Search modules..." [(ngModel)]="searchTerm" />
+    <select [(ngModel)]="selectedLevel">
+      <option value="All">All Levels</option>
+      <option value="Beginner">Beginner</option>
+      <option value="Intermediate">Intermediate</option>
+    </select>
+    <select [(ngModel)]="selectedStatus">
+      <option value="All">All Status</option>
+      <option value="New">New</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Completed">Completed</option>
+    </select>
+  </section>
+
+  <!-- Skeleton Loader -->
+  <section class="modules-grid" *ngIf="isLoading">
+    <div class="skeleton-card" *ngFor="let _ of [1,2,3]"></div>
+  </section>
+
+  <!-- Empty State -->
+  <section class="empty-state" *ngIf="!isLoading && filteredModules.length === 0">
+    <h3>No modules found</h3>
+    <p>Try adjusting your search or filters.</p>
+  </section>
+
+  <!-- Modules Grid -->
+  <section class="modules-grid" *ngIf="!isLoading && filteredModules.length">
+    <article
+      class="module-card"
+      *ngFor="let module of filteredModules"
+      (click)="openModule(module.id)"
+    >
+
+      <span class="badge" [ngClass]="module.status.toLowerCase().replace(' ', '-')">
+        {{ module.status }}
+      </span>
+
+      <h3>{{ module.title }}</h3>
+      <p class="description">{{ module.description }}</p>
+
+      <!-- Progress -->
+      <div class="progress-wrapper" *ngIf="module.status !== 'New'">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="module.progress"></div>
+        </div>
+        <span class="progress-text">{{ module.progress }}% completed</span>
+      </div>
+
+      <!-- Meta -->
+      <div class="meta">
+        <span>📘 {{ module.level }}</span>
+        <span>⏱ {{ module.duration }}</span>
+      </div>
+
+      <!-- Continue CTA -->
+      <button
+        class="continue-btn"
+        *ngIf="module.status === 'In Progress'"
+        (click)="continueModule(module.id, $event)"
+      >
+        Continue
+      </button>
+
+    </article>
+  </section>
+
+</div>

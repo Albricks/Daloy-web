@@ -1,0 +1,42 @@
+<footer class="nav-footer">
+  <div class="links">
+    <button (click)="openModal('about')">About</button>
+    <span>•</span>
+    <button (click)="openModal('contact')">Contact</button>
+    <span>•</span>
+    <button (click)="openModal('privacy')">Privacy</button>
+  </div>
+
+  <div class="copy">
+    © 2025 Daloy
+  </div>
+</footer>
+
+<!-- ABOUT -->
+<app-modal
+  title="About Daloy"
+  [isOpen]="activeModal === 'about'"
+  (close)="closeModal()"
+>
+  <p>Daloy provides accessible learning tools for modern education.</p>
+</app-modal>
+
+<!-- CONTACT -->
+<app-modal
+  title="Contact Us"
+  [isOpen]="activeModal === 'contact'"
+  (close)="closeModal()"
+>
+  <p>Email: support@daloy.com</p>
+</app-modal>
+
+<!-- PRIVACY -->
+<app-modal
+  title="Privacy Policy"
+  [isOpen]="activeModal === 'privacy'"
+  (close)="closeModal()"
+>
+  <p>
+    We respect your privacy and protect your personal information.
+  </p>
+</app-modal>

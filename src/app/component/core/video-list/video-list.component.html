@@ -1,0 +1,49 @@
+<div class="videos-page">
+
+  <!-- Header -->
+  <header class="page-header">
+    <h1>Videos</h1>
+    <p>Enhance Your Learning Journey with Videos</p>
+  </header>
+
+  <!-- Controls (STATUS ONLY) -->
+  <section class="controls">
+    <select [(ngModel)]="selectedStatus">
+      <option value="All">All Status</option>
+      <option value="New">New</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Completed">Completed</option>
+    </select>
+  </section>
+
+  <!-- Videos Grid -->
+  <section class="videos-grid">
+    <article
+      class="video-card"
+      *ngFor="let video of filteredVideos"
+      (click)="openVideo(video.id)"
+    >
+
+      <div class="thumb">
+        <img [src]="video.thumbnail" alt="video thumbnail" />
+
+        <div class="overlay">
+          <span class="play-icon">▶</span>
+        </div>
+
+        <span class="duration">{{ video.duration }}</span>
+
+        <span
+          class="status-badge"
+          [ngClass]="video.status.toLowerCase().replace(' ', '-')"
+        >
+          {{ video.status }}
+        </span>
+      </div>
+
+      <h3 class="title">{{ video.title }}</h3>
+
+    </article>
+  </section>
+
+</div>

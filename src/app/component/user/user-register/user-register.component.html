@@ -1,0 +1,132 @@
+<div class="auth-container">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <h1>Daloy</h1>
+    <p>
+      Securely access your platform with confidence.<br />
+      Manage your workflow, data, and progress in one place.
+    </p>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="login-card">
+
+      <!-- PROFILE IMAGE -->
+      <div class="profile-upload">
+        <label for="profileImage">
+          <div class="avatar-wrapper">
+            <img
+              *ngIf="profilePreview; else placeholder"
+              [src]="profilePreview"
+              alt="Profile preview"
+            />
+            <ng-template #placeholder>
+              <div class="avatar-placeholder"></div>
+            </ng-template>
+          </div>
+        </label>
+
+        <input
+          type="file"
+          id="profileImage"
+          accept="image/*"
+          hidden
+          (change)="onFileSelected($event)"
+        />
+
+        <span class="upload-text">Upload photo</span>
+      </div>
+
+      <h2>Create your account</h2>
+      <p class="subtitle">Join Daloy and start learning</p>
+
+      <!-- SUCCESS MESSAGE -->
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <!-- FORM -->
+      <form [formGroup]="signupForm" (ngSubmit)="submit()">
+
+        <!-- USERNAME -->
+        <label>Username</label>
+        <input
+          type="text"
+          placeholder="lowercase only, no spaces"
+          formControlName="username"
+        />
+
+        <div
+          class="error"
+          *ngIf="f['username'].touched && f['username'].errors"
+        >
+          <span *ngIf="f['username'].errors['required']">
+            Username is required
+          </span>
+
+          <span *ngIf="f['username'].errors['pattern']">
+            Only lowercase letters and numbers, no spaces
+          </span>
+        </div>
+
+        <!-- FULL NAME -->
+        <label>Full Name</label>
+        <input type="text" formControlName="fullName" />
+
+        <!-- BIRTHDATE -->
+        <label>Birthdate</label>
+        <input type="date" formControlName="birthDate" />
+
+        <!-- EMAIL -->
+        <label>Email</label>
+        <input type="email" formControlName="email" />
+
+        <!-- PASSWORD -->
+        <label>Password</label>
+        <input
+          type="password"
+          formControlName="password"
+          (keyup)="onPasswordKey($event)"
+        />
+
+        <ul class="password-rules" *ngIf="showPasswordRules">
+          <li [class.valid]="hasMinLength()">At least 8 characters</li>
+          <li [class.valid]="hasUppercase()">One uppercase letter</li>
+          <li [class.valid]="hasLowercase()">One lowercase letter</li>
+          <li [class.valid]="hasNumber()">One number</li>
+          <li [class.valid]="hasSpecial()">One special character</li>
+        </ul>
+
+        <div class="caps-warning" *ngIf="capsLockOn">
+          ⚠️ Caps Lock is ON
+        </div>
+
+        <!-- CONFIRM PASSWORD -->
+        <label>Confirm Password</label>
+        <input type="password" formControlName="confirmPassword" />
+
+        <div
+          class="error"
+          *ngIf="
+            signupForm.errors?.['passwordMismatch'] &&
+            (f['password'].touched || f['confirmPassword'].touched)
+          "
+        >
+          Passwords do not match
+        </div>
+
+        <button type="submit" [disabled]="isSubmitting">
+        Sign Up →
+        </button>
+      </form>
+
+      <p class="signup">
+        Already have an account?
+        <a routerLink="/login">Log in here</a>
+      </p>
+
+    </div>
+  </div>
+</div>

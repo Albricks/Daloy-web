@@ -1,0 +1,33 @@
+.nav-footer {
+  text-align: center;
+  padding: 12px 8px;
+  font-size: 12px;
+  color: #9aa3af;
+}
+
+.links {
+  margin-bottom: 4px;
+}
+
+.links button {
+  background: none;
+  border: none;
+  color: #9aa3af;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.links button:hover {
+  color: #ffffff;
+}
+
+.copy {
+  opacity: 0.8;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  background: red;
+}

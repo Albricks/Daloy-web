@@ -1,0 +1,111 @@
+<div class="auth-container">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <h1>Daloy</h1>
+    <p>
+      Securely access your platform with confidence.<br />
+      Manage your workflow, data, and progress in one place.
+    </p>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="login-card">
+      <h2>Welcome, Learners</h2>
+      <p class="subtitle">Please log in to your account</p>
+
+      <!-- LOGIN FORM -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+        <div class="form-field">
+          <label>Email</label>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            formControlName="email"
+          />
+        </div>
+
+        <div class="form-field">
+          <label>Password</label>
+          <div class="password-wrapper">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="Enter your password"
+              formControlName="password"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePassword()">
+              👁
+            </button>
+          </div>
+        </div>
+
+        <!-- Login error -->
+        <div *ngIf="errorMessage" class="error">
+          {{ errorMessage }}
+        </div>
+
+        <div class="options">
+          <div class="remember">
+            <input type="checkbox" formControlName="rememberMe" />
+            <span>Remember me</span>
+          </div>
+
+          <button
+            type="button"
+            class="link-button"
+            (click)="openForgotPassword()">
+            Forgot password?
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="loginForm.invalid">
+          Log In →
+        </button>
+      </form>
+
+      <p class="signup">
+        Don’t have an account?
+        <a routerLink="/signup">Sign up here</a>
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- FORGOT PASSWORD MODAL (OUTSIDE FORM) -->
+<div class="modal-backdrop" *ngIf="showForgotPassword">
+  <div class="modal">
+    <h3>Reset your password</h3>
+    <p>Enter your email and we’ll send you a reset link.</p>
+
+    <form [formGroup]="forgotForm" (ngSubmit)="sendReset()">
+
+      <input
+        type="email"
+        placeholder="Enter your email"
+        formControlName="email"
+      />
+
+      <div *ngIf="forgotError" class="error">
+        {{ forgotError }}
+      </div>
+
+      <div *ngIf="forgotMessage" class="success">
+        {{ forgotMessage }}
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" (click)="closeForgotPassword()">Cancel</button>
+        <button type="submit">Send link</button>
+      </div>
+
+    </form>
+  </div>
+</div>

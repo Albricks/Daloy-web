@@ -1,0 +1,172 @@
+.diary-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* HEADER */
+.diary-header {
+  margin-bottom: 20px;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-btn {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  background: #1e3a8a;
+  color: white;
+  cursor: pointer;
+}
+
+/* TOGGLE */
+.view-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.view-toggle button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #cbd5f5;
+  background: white;
+}
+
+.view-toggle .active {
+  background: #1e3a8a;
+  color: white;
+}
+
+/* SUMMARY */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  padding: 20px;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.budget { border-left: 4px solid #2563eb; }
+.spent { border-left: 4px solid #f97316; }
+.saved { border-left: 4px solid #16a34a; }
+
+/* ENTRIES */
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entry {
+  padding: 18px;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 8px 20px rgba(0,0,0,.06);
+  cursor: pointer;
+}
+
+.date {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.values {
+  display: flex;
+  gap: 20px;
+  color: #475569;
+}
+
+.values .saved {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.notes {
+  margin-top: 8px;
+  font-style: italic;
+  color: #64748b;
+}
+
+/* OVERLAY + PANEL */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 40;
+}
+
+.entry-panel {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 420px;
+  height: 100%;
+  background: white;
+  padding: 24px;
+  z-index: 50;
+  transition: right .3s ease;
+  box-shadow: -20px 0 40px rgba(0,0,0,.15);
+}
+
+.entry-panel.open {
+  right: 0;
+}
+
+.entry-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entry-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.entry-panel input,
+.entry-panel textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+}
+
+.entry-panel footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.primary {
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+.danger {
+  background: transparent;
+  color: #dc2626;
+  border: none;
+  cursor: pointer;
+}

@@ -1,0 +1,101 @@
+<div class="diary-page">
+
+  <!-- HEADER -->
+  <header class="diary-header">
+    <div class="header-row">
+      <div>
+        <h1>My Daloy Diary</h1>
+        <p>Track your daily spending and reflect on your progress.</p>
+      </div>
+
+      <button class="add-btn" (click)="openAddEntry()">+ Add Entry</button>
+    </div>
+  </header>
+
+  <!-- VIEW TOGGLE -->
+  <section class="view-toggle">
+    <button [class.active]="viewMode === 'daily'" (click)="setView('daily')">Daily</button>
+    <button [class.active]="viewMode === 'weekly'" (click)="setView('weekly')">Weekly</button>
+    <button [class.active]="viewMode === 'monthly'" (click)="setView('monthly')">Monthly</button>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="summary">
+    <div class="summary-card budget">
+      <span>Budget</span>
+      <h2>{{ totalBudget }}</h2>
+    </div>
+    <div class="summary-card spent">
+      <span>Spent</span>
+      <h2>{{ totalSpent }}</h2>
+    </div>
+    <div class="summary-card saved">
+      <span>Saved</span>
+      <h2>{{ totalSaved }}</h2>
+    </div>
+  </section>
+
+  <!-- ENTRIES -->
+  <section class="entries">
+    <article
+      class="entry"
+      *ngFor="let entry of entries"
+      (click)="openEditEntry(entry)"
+    >
+      <div class="date">{{ entry.date }}</div>
+
+      <div class="values">
+        <span>Budget: {{ entry.budget }}</span>
+        <span>Spent: {{ entry.spent }}</span>
+        <span class="saved">Saved: {{ entry.budget - entry.spent }}</span>
+      </div>
+
+      <p class="notes" *ngIf="entry.notes">{{ entry.notes }}</p>
+    </article>
+  </section>
+
+</div>
+
+<!-- SLIDE-IN PANEL -->
+<div class="overlay" *ngIf="isPanelOpen" (click)="closePanel()"></div>
+
+<aside class="entry-panel" [class.open]="isPanelOpen">
+  <header>
+    <h2>{{ selectedEntry?.id ? 'Edit Entry' : 'Add Entry' }}</h2>
+    <button (click)="closePanel()">✕</button>
+  </header>
+
+    <form (ngSubmit)="saveEntry(); $event.preventDefault()">
+    <label>
+      Budget
+      <input type="number" [(ngModel)]="selectedEntry!.budget" name="budget" required />
+    </label>
+
+    <label>
+      Spent
+      <input type="number" [(ngModel)]="selectedEntry!.spent" name="spent" required />
+    </label>
+
+    <div class="saved">
+      Saved: {{ selectedEntry!.budget - selectedEntry!.spent }}
+    </div>
+
+    <label>
+      Notes
+      <textarea [(ngModel)]="selectedEntry!.notes" name="notes"></textarea>
+    </label>
+
+    <footer>
+      <button type="button" class="danger" *ngIf="selectedEntry?.id" (click)="deleteEntry()">
+        Delete
+      </button>
+
+      <div class="actions">
+        <button type="button" (click)="closePanel()">Cancel</button>
+        <button type="submit" class="primary">
+          {{ selectedEntry?.id ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </footer>
+  </form>
+</aside>

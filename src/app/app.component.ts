@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -9,6 +9,7 @@ import {
   style,
   animate
 } from '@angular/animations';
+import { AuthService } from './core/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,7 @@ import {
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-    animations: [
+  animations: [
     trigger('routeFade', [
       transition('* <=> *', [
         style({ opacity: 0, transform: 'translateY(4px)' }),
@@ -35,7 +36,10 @@ import {
 export class AppComponent {
   showHeader = false;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {

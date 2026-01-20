@@ -1,25 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, tap } from 'rxjs';
+import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
+
+import { environment } from '../../../environments/environment';
 import { ApiResponse } from './models/api-response';
 import { AuthResponse } from './models/auth-response';
-import { environment } from '../../../environments/environment';
-
-export interface User {
-  id: string;
-  email: string;
-  userName: string;
-  fullName: string;
-  birthDate: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  username: string;
-  fullName: string;
-  birthDate: string;
-}
+import { MeDto } from './models/me.dto';
 
 @Injectable({
   providedIn: 'root'
@@ -27,47 +15,84 @@ export interface RegisterRequest {
 export class AuthService {
   private readonly apiUrl = `${environment.apiUrl}/auth`;
 
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private currentUserSubject = new BehaviorSubject<MeDto | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  private authReadySubject = new BehaviorSubject<boolean>(false);
+  authReady$ = this.authReadySubject.asObservable();
 
-  // ---------- REGISTER ----------
-  register(data: RegisterRequest) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
+
+  // --------------------
+  // SAFE STORAGE ACCESS (SSR-SAFE)
+  // --------------------
+  private get storage(): Storage | null {
+    return isPlatformBrowser(this.platformId) ? localStorage : null;
+  }
+
+  // --------------------
+  // REGISTER
+  // --------------------
+  register(data: any) {
     return this.http.post(`${this.apiUrl}/register`, data);
   }
 
-  // ---------- LOGIN ----------
-login(email: string, password: string) {
-  return this.http
-    .post<ApiResponse<AuthResponse>>(`${this.apiUrl}/login`, { email, password })
-    .pipe(
-      tap(res => {
-        localStorage.setItem('token', res.data!.accessToken);
-        localStorage.setItem('refreshToken', res.data!.refreshToken);
-        this.currentUserSubject.next(res.data!.user);
-      })
-    );
-}
-
-  // ---------- LOAD CURRENT USER ----------
-  loadCurrentUser() {
+  // --------------------
+  // LOGIN
+  // --------------------
+  login(email: string, password: string) {
     return this.http
-      .get<User>(`${this.apiUrl}/me`)
+      .post<ApiResponse<AuthResponse>>(`${this.apiUrl}/login`, { email, password })
       .pipe(
-        tap(user => this.currentUserSubject.next(user))
+        tap(res => {
+          this.storage?.setItem('token', res.data!.accessToken);
+          this.storage?.setItem('refreshToken', res.data!.refreshToken);
+        })
       );
   }
 
-  // ---------- LOGOUT ----------
-  logout() {
-    localStorage.removeItem('token');
-    this.currentUserSubject.next(null);
+  // --------------------
+  // LOAD CURRENT USER (/me)
+  // --------------------
+loadMe(): void {
+  const token = this.storage?.getItem('token');
+
+  if (!token) {
+    this.authReadySubject.next(true);
+    return;
   }
 
-  // ---------- HELPERS ----------
+  this.http.get<MeDto>(`${this.apiUrl}/me`).subscribe({
+    next: user => {
+      this.currentUserSubject.next(user);
+      this.authReadySubject.next(true);
+    },
+    error: () => {
+      this.logout();
+      this.authReadySubject.next(true);
+    }
+  });
+}
+
+  // --------------------
+  // LOGOUT
+  // --------------------
+  logout(): void {
+    this.storage?.removeItem('token');
+    this.storage?.removeItem('refreshToken');
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/login']);
+  }
+
+  // --------------------
+  // HELPERS
+  // --------------------
   get token(): string | null {
-    return localStorage.getItem('token');
+    return this.storage?.getItem('token') ?? null;
   }
 
   get isLoggedIn(): boolean {

@@ -1,4 +1,9 @@
+/* -------------------------
+   CARD
+-------------------------- */
 .login-card {
+  position: relative; /* ensures proper stacking */
+  z-index: 1;
   width: 420px;
   padding: 48px;
   border-radius: 14px;
@@ -17,6 +22,9 @@
   margin-bottom: 32px;
 }
 
+/* -------------------------
+   FORM ELEMENTS
+-------------------------- */
 label {
   font-size: 14px;
   font-weight: 500;
@@ -36,6 +44,9 @@ input {
   margin-bottom: 20px;
 }
 
+/* -------------------------
+   PASSWORD FIELD
+-------------------------- */
 .password-wrapper {
   position: relative;
   display: flex;
@@ -43,30 +54,35 @@ input {
 }
 
 .password-wrapper input {
-  margin-bottom: 0; 
+  margin-bottom: 0;
   width: 100%;
-  padding-right: 40px; /* space for eye */
+  padding-right: 40px;
 }
 
+/* eye icon button */
 .password-toggle {
   position: absolute;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  width: auto;
-  height: auto;
-  padding: 0;
   background: none;
   border: none;
+  padding: 0;
   cursor: pointer;
   font-size: 16px;
   color: #666;
+  width: auto;
+  height: auto;
+  z-index: 2; /* prevents overlay issues */
 }
 
 .password-toggle:hover {
   color: #000;
 }
 
+/* -------------------------
+   OPTIONS ROW
+-------------------------- */
 .options {
   display: flex;
   justify-content: space-between;
@@ -75,8 +91,39 @@ input {
   margin-bottom: 28px;
 }
 
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
 
-button {
+.remember input {
+  margin: 0;
+}
+
+/* forgot password button */
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  font-family: inherit;
+  color: #5b4dff;
+  cursor: pointer;
+  width: auto;
+  white-space: nowrap;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+/* -------------------------
+   SUBMIT BUTTON (SCOPED)
+-------------------------- */
+.login-card form > button[type="submit"] {
   width: 100%;
   padding: 14px;
   border-radius: 10px;
@@ -87,21 +134,13 @@ button {
   cursor: pointer;
 }
 
+/* -------------------------
+   TEXT
+-------------------------- */
 .signup {
   text-align: center;
   font-size: 13px;
   margin-top: 22px;
-}
-
-.remember {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap; 
-}
-
-.remember input {
-  margin: 0;
 }
 
 .error {
@@ -110,10 +149,13 @@ button {
   margin: 8px 0 12px;
 }
 
+/* -------------------------
+   MODAL
+-------------------------- */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,38 +163,24 @@ button {
 }
 
 .modal {
-  background: white;
+  background: #fff;
   padding: 24px;
-  border-radius: 16px;
-  width: 360px;
+  border-radius: 12px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 10px
+  margin-top: 10px;
 }
 
 .modal-actions button {
   width: auto;
   padding: 10px 18px;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  font-size: 13px;
-  font-family: inherit;
-  color: #5b4dff;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.link-button:hover {
-  text-decoration: underline;
 }
 
 .modal-actions button:first-child {

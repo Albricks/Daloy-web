@@ -17,53 +17,55 @@ export const routes: Routes = [
   },
   {
     path: 'reset-password',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./component/user/reset-password/reset-password.component')
-        .then(m => m.ResetPasswordComponent)
+        .then(m => m.ResetPasswordComponent),
   },
-
+  
   // ---------- PROTECTED ----------
+
   {
     path: 'home',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./component/content/home/home.component')
-        .then(m => m.HomeComponent)
+        .then(m => m.HomeComponent),
   },
   {
     path: 'modules',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./component/core/module-list/module-list.component')
-        .then(m => m.ModulesListComponent)
+        .then(m => m.ModulesListComponent),
   },
   {
     path: 'videos',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./component/core/video-list/video-list.component')
-        .then(m => m.VideoListComponent)
+        .then(m => m.VideoListComponent),
   },
   {
     path: 'diary',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./component/core/diary/diary.component')
-        .then(m => m.DiaryComponent)
+        .then(m => m.DiaryComponent),
   },
   {
     path: 'whats-new',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./component/content/whatsnew/whatsnew.component')
-        .then(m => m.WhatsNewComponent)
+        .then(m => m.WhatsNewComponent),
   },
   {
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./utility/profile/profile.component')
-        .then(m => m.ProfileComponent)
+        .then(m => m.ProfileComponent),
   },
 
   // ---------- MODULE SUB-ROUTES ----------
@@ -93,5 +95,7 @@ export const routes: Routes = [
   },
 
   // ---------- DEFAULT ----------
-  { path: '', redirectTo: 'login', pathMatch: 'full' }
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '**', redirectTo: 'login' }
+
 ];

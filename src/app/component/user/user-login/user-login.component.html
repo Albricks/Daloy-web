@@ -19,13 +19,29 @@
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
         <div class="form-field">
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            formControlName="email"
-          />
+      <label>Email</label>
+      <input
+        type="email"
+        placeholder="Enter your email"
+        formControlName="email"
+      />
+        <!-- EMAIL VALIDATION -->
+        <div
+          class="error"
+          *ngIf="
+            loginForm.get('email')?.touched &&
+            loginForm.get('email')?.errors
+          "
+        >
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">
+            Email is required
+          </span>
+
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">
+            Please enter a valid email address
+          </span>
         </div>
+      </div>
 
         <div class="form-field">
           <label>Password</label>
@@ -44,11 +60,6 @@
           </div>
         </div>
 
-        <!-- Login error -->
-        <div *ngIf="errorMessage" class="error">
-          {{ errorMessage }}
-        </div>
-
         <div class="options">
           <div class="remember">
             <input type="checkbox" formControlName="rememberMe" />
@@ -63,9 +74,8 @@
           </button>
         </div>
 
-        <button
-          type="submit"
-          [disabled]="loginForm.invalid">
+        <!-- LOGIN BUTTON (always enabled) -->
+        <button type="submit">
           Log In →
         </button>
       </form>
@@ -76,10 +86,23 @@
       </p>
     </div>
   </div>
-
 </div>
 
-<!-- FORGOT PASSWORD MODAL (OUTSIDE FORM) -->
+<!-- LOGIN ERROR MODAL -->
+<div class="modal-backdrop" *ngIf="showLoginErrorModal">
+  <div class="modal">
+    <h3>Login failed</h3>
+    <p>{{ loginErrorText }}</p>
+
+    <div class="modal-actions">
+      <button type="button" (click)="closeLoginErrorModal()">
+        Try again
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
 <div class="modal-backdrop" *ngIf="showForgotPassword">
   <div class="modal">
     <h3>Reset your password</h3>

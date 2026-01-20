@@ -17,6 +17,6 @@ export const serverRoutes: ServerRoute[] = [
   // fallback
   {
     path: '**',
-    renderMode: RenderMode.Prerender
+    renderMode: RenderMode.Client
   }
 ];

@@ -1,10 +1,19 @@
 <div class="home-page">
 
   <!-- HERO -->
-  <section class="hero">
+<section class="hero">
+  <ng-container *ngIf="user$ | async as user; else loading">
+    <h1>
+      Hi {{ user.userName }}, welcome to Daloy 👋
+    </h1>
+  </ng-container>
+
+  <ng-template #loading>
     <h1>Welcome to Daloy</h1>
-    <p><b>Your digital learning and personal growth space</b></p>
-  </section>
+  </ng-template>
+
+  <p><b>Your digital learning and personal growth space</b></p>
+</section>
 
   <!-- FEATURE CARDS -->
   <section class="features">

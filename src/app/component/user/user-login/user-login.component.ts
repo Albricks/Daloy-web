@@ -1,8 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  FormGroup
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-user-login',
@@ -17,12 +23,15 @@ export class UserLoginComponent {
   showPassword = false;
   showForgotPassword = false;
 
+  // Login error modal
+  showLoginErrorModal = false;
+  loginErrorText = '';
+
   // Forms
   loginForm!: FormGroup;
   forgotForm!: FormGroup;
 
-  // Messages
-  errorMessage: string | null = null;
+  // Forgot password messages
   forgotMessage: string | null = null;
   forgotError: string | null = null;
 
@@ -38,7 +47,7 @@ export class UserLoginComponent {
       rememberMe: [false]
     });
 
-    // Forgot password form (modal)
+    // Forgot password form
     this.forgotForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
@@ -58,19 +67,35 @@ onSubmit() {
     return;
   }
 
-  this.errorMessage = null;
-
   const { email, password } = this.loginForm.value;
 
   this.authService.login(email, password).subscribe({
     next: () => {
-      this.router.navigate(['/home']);
+      this.authService.loadMe();
+
+      // 🔥 WAIT for user to be hydrated
+      this.authService.currentUser$
+        .pipe(take(1))
+        .subscribe(() => {
+          this.router.navigate(['/home']);
+        });
     },
-    error: err => {
-      this.errorMessage = err?.error?.message ?? 'Invalid credentials';
+    error: () => {
+      this.loginErrorText = 'Incorrect email or password.';
+      this.showLoginErrorModal = true;
+
+      this.loginForm.reset({
+        email,
+        password: '',
+        rememberMe: false
+      });
     }
   });
 }
+
+  closeLoginErrorModal() {
+    this.showLoginErrorModal = false;
+  }
 
   // --------------------
   // Forgot password modal
@@ -87,9 +112,8 @@ onSubmit() {
     this.forgotError = null;
   }
 
-sendReset() {
-  this.forgotError = null;
-  this.forgotMessage = 'Password reset will be available soon.';
-}
-
+  sendReset() {
+    this.forgotError = null;
+    this.forgotMessage = 'Password reset will be available soon.';
+  }
 }

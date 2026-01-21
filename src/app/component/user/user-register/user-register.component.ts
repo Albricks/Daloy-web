@@ -8,7 +8,8 @@ import {
   ValidationErrors,
   FormGroup
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -34,6 +35,21 @@ export class UserRegisterComponent {
     private router: Router,
     private authService: AuthService
   ) {
+    // 🔥 RESET FORM ON EVERY ROUTE ENTRY
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.buildForm();
+      });
+
+    // initial build
+    this.buildForm();
+  }
+
+  /* ---------------------------
+     FORM BUILDER (SINGLE SOURCE)
+  ---------------------------- */
+  private buildForm(): void {
     this.signupForm = this.fb.nonNullable.group(
       {
         username: ['', [Validators.required, Validators.pattern(/^[a-z0-9]+$/)]],
@@ -48,12 +64,18 @@ export class UserRegisterComponent {
         validators: [this.passwordMatchValidator]
       }
     );
+
+    // 🔄 reset UI state
+    this.profilePreview = null;
+    this.errorMessage = null;
+    this.successMessage = null;
+    this.isSubmitting = false;
+    this.capsLockOn = false;
   }
 
   /* ---------------------------
      VALIDATORS
   ---------------------------- */
-
   passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
     const password = group.get('password')?.value;
     const confirm = group.get('confirmPassword')?.value;
@@ -63,7 +85,6 @@ export class UserRegisterComponent {
   /* ---------------------------
      PASSWORD RULE HELPERS
   ---------------------------- */
-
   hasUppercase = () => /[A-Z]/.test(this.f['password'].value || '');
   hasLowercase = () => /[a-z]/.test(this.f['password'].value || '');
   hasNumber = () => /[0-9]/.test(this.f['password'].value || '');
@@ -77,7 +98,6 @@ export class UserRegisterComponent {
   /* ---------------------------
      IMAGE PREVIEW
   ---------------------------- */
-
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || !input.files[0]) return;
@@ -93,53 +113,52 @@ export class UserRegisterComponent {
   /* ---------------------------
      SUBMIT (API REGISTER)
   ---------------------------- */
+  submit() {
+    if (this.signupForm.invalid) {
+      this.signupForm.markAllAsTouched();
+      return;
+    }
 
-submit() {
-  if (this.signupForm.invalid) {
-    this.signupForm.markAllAsTouched();
-    return;
+    this.isSubmitting = true;
+
+    const {
+      email,
+      password,
+      username,
+      fullName,
+      birthDate
+    } = this.signupForm.value;
+
+    const payload = {
+      email: email!,
+      password: password!,
+      username,
+      fullName,
+      birthDate: new Date(birthDate).toISOString()
+    };
+
+    this.authService.register(payload).subscribe({
+      next: () => {
+        this.successMessage = '🎉 Account created successfully! Redirecting to login…';
+        this.signupForm.disable();
+
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
+      error: err => {
+        console.error(err);
+        this.isSubmitting = false;
+        this.errorMessage =
+          err?.error?.message ?? 'Registration failed';
+      }
+    });
   }
 
-  this.isSubmitting = true;
-
-  const {
-    email,
-    password,
-    username,
-    fullName,
-    birthDate
-  } = this.signupForm.value;
-
-  const payload = {
-    email: email!,
-    password: password!,
-    username,
-    fullName,
-    birthDate: new Date(birthDate).toISOString()
-  };
-
-  this.authService.register(payload).subscribe({
-    next: () => {
-      this.successMessage = '🎉 Account created successfully! Redirecting to login…';
-      this.signupForm.disable();
-
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 2000);
-    },
-    error: err => {
-      console.error(err);
-      this.isSubmitting = false;
-      this.errorMessage =
-        err?.error?.message ?? 'Registration failed';
-    }
-  });
-}
-
-get showPasswordRules(): boolean {
-  const value = this.f['password'].value;
-  return !!value && value.length > 0;
-}
+  get showPasswordRules(): boolean {
+    const value = this.f['password'].value;
+    return !!value && value.length > 0;
+  }
 
   get f() {
     return this.signupForm.controls;

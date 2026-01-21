@@ -24,11 +24,30 @@
     </a>
 
 <!-- PROFILE -->
-<div class="profile">
+<div class="profile" *ngIf="user$ | async as user">
 
   <div class="profile-trigger" (click)="toggleDropdown()">
-    <div class="avatar"></div>
-    <span class="profile-name">Profile</span>
+
+    <!-- Avatar -->
+    <ng-container *ngIf="user.avatarUrl; else fallbackAvatar">
+      <img
+        class="avatar"
+        [src]="user.avatarUrl"
+        alt="User avatar"
+      />
+    </ng-container>
+
+    <!-- Fallback (initial) -->
+    <ng-template #fallbackAvatar>
+      <div class="avatar avatar-fallback">
+        {{ user.userName[0] | uppercase }}
+      </div>
+    </ng-template>
+
+    <span class="profile-name">
+      {{ user.userName }}
+    </span>
+
   </div>
 
   <div class="dropdown" *ngIf="isDropdownOpen">

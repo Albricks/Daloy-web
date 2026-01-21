@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive} from '@angular/router';
+import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { MeDto } from '../../core/auth/models/me.dto';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-nav-header',
@@ -10,20 +12,35 @@ import { AuthService } from '../../core/auth/auth.service';
   templateUrl: './nav-header.component.html',
   styleUrls: ['./nav-header.component.css']
 })
-export class NavHeaderComponent {
+export class NavHeaderComponent implements OnInit {
   isDropdownOpen = false;
 
-    constructor(
+  // declare only (no initialization here)
+  user$!: Observable<MeDto | null>;
+
+  constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
+
+  ngOnInit(): void {
+    // ✅ safe: constructor has already run
+    this.user$ = this.authService.currentUser$;
+
+    // ✅ SSR-safe window access
+    if (isPlatformBrowser(this.platformId)) {
+      window.addEventListener('close-profile-menu', () => {
+        this.isDropdownOpen = false;
+      });
+    }
+  }
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
   goProfile() {
-    console.log('Navigating to /profile');
     this.closeDropdown();
     this.router.navigate(['/profile']);
   }
@@ -37,18 +54,8 @@ export class NavHeaderComponent {
     this.isDropdownOpen = false;
   }
 
-  async logout() {
-    await this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  closeProfileMenu() {
-  this.isDropdownOpen = false;
-}
-
-  ngOnInit() {
-    window.addEventListener('close-profile-menu', () => {
-      this.isDropdownOpen = false;
-    });
+  logout() {
+    this.closeDropdown();
+    this.authService.logout();
   }
 }

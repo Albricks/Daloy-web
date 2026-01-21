@@ -80,10 +80,27 @@
 
 /* Avatar */
 .avatar {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: #e5e7eb;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-fallback {
+  background: linear-gradient(135deg, #2563eb, #1e40af); /* blue gradient */
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.profile-trigger:hover .avatar-fallback {
+  filter: brightness(1.1);
 }
 
 /* Profile text */

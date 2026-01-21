@@ -13,6 +13,9 @@
   <div class="right-panel">
     <div class="login-card">
 
+      <h2>Create your account</h2>
+      <p class="subtitle">Join Daloy and start learning</p>
+
       <!-- PROFILE IMAGE -->
       <div class="profile-upload">
         <label for="profileImage">
@@ -36,11 +39,8 @@
           (change)="onFileSelected($event)"
         />
 
-        <span class="upload-text">Upload photo</span>
+        <span class="upload-text"><b>Upload photo</b></span>
       </div>
-
-      <h2>Create your account</h2>
-      <p class="subtitle">Join Daloy and start learning</p>
 
       <!-- SUCCESS MESSAGE -->
       <div class="success-message" *ngIf="successMessage">

@@ -40,6 +40,11 @@ export class NavHeaderComponent implements OnInit {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
+  onAvatarError(event: Event): void {
+  const img = event.target as HTMLImageElement;
+  img.src = 'assets/default-avatar.png';
+  }
+
   goProfile() {
     this.closeDropdown();
     this.router.navigate(['/profile']);

@@ -35,19 +35,17 @@ export class UserRegisterComponent {
     private router: Router,
     private authService: AuthService
   ) {
-    // 🔥 RESET FORM ON EVERY ROUTE ENTRY
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.buildForm();
       });
 
-    // initial build
     this.buildForm();
   }
 
   /* ---------------------------
-     FORM BUILDER (SINGLE SOURCE)
+     FORM BUILDER
   ---------------------------- */
   private buildForm(): void {
     this.signupForm = this.fb.nonNullable.group(
@@ -58,14 +56,13 @@ export class UserRegisterComponent {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', Validators.required],
-        profileImage: [null as File | null]
+        profileImage: [null as File | null] // 👈 used for FormData
       },
       {
         validators: [this.passwordMatchValidator]
       }
     );
 
-    // 🔄 reset UI state
     this.profilePreview = null;
     this.errorMessage = null;
     this.successMessage = null;
@@ -103,6 +100,8 @@ export class UserRegisterComponent {
     if (!input.files || !input.files[0]) return;
 
     const file = input.files[0];
+
+    // 👇 store File object (important)
     this.signupForm.patchValue({ profileImage: file });
 
     const reader = new FileReader();
@@ -111,7 +110,8 @@ export class UserRegisterComponent {
   }
 
   /* ---------------------------
-     SUBMIT (API REGISTER)
+     SUBMIT (REGISTER)
+     🔥 SWITCHED TO FormData
   ---------------------------- */
   submit() {
     if (this.signupForm.invalid) {
@@ -126,18 +126,23 @@ export class UserRegisterComponent {
       password,
       username,
       fullName,
-      birthDate
+      birthDate,
+      profileImage
     } = this.signupForm.value;
 
-    const payload = {
-      email: email!,
-      password: password!,
-      username,
-      fullName,
-      birthDate: new Date(birthDate).toISOString()
-    };
+    // ✅ FormData instead of JSON
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('username', username);
+    formData.append('fullName', fullName);
+    formData.append('birthDate', new Date(birthDate).toISOString());
 
-    this.authService.register(payload).subscribe({
+    if (profileImage) {
+      formData.append('avatar', profileImage);
+    }
+
+    this.authService.register(formData).subscribe({
       next: () => {
         this.successMessage = '🎉 Account created successfully! Redirecting to login…';
         this.signupForm.disable();
@@ -155,10 +160,14 @@ export class UserRegisterComponent {
     });
   }
 
-  get showPasswordRules(): boolean {
-    const value = this.f['password'].value;
-    return !!value && value.length > 0;
-  }
+get showPasswordRules(): boolean {
+  const passwordControl = this.f['password'];
+
+  return (
+    passwordControl.touched &&
+    passwordControl.invalid
+  );
+}
 
   get f() {
     return this.signupForm.controls;

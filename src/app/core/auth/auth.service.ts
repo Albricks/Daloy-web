@@ -13,7 +13,7 @@ import { MeDto } from './models/me.dto';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = `${environment.apiUrl}/auth`;
+  private readonly apiUrl = `${environment.apiUrl}`;
 
   private currentUserSubject = new BehaviorSubject<MeDto | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
@@ -37,23 +37,26 @@ export class AuthService {
   // --------------------
   // REGISTER
   // --------------------
-  register(data: any) {
-    return this.http.post(`${this.apiUrl}/register`, data);
-  }
+  register(data: FormData) {
+  return this.http.post(`${this.apiUrl}/auth/register`, data);
+}
 
   // --------------------
   // LOGIN
   // --------------------
-  login(email: string, password: string) {
-    return this.http
-      .post<ApiResponse<AuthResponse>>(`${this.apiUrl}/login`, { email, password })
-      .pipe(
-        tap(res => {
-          this.storage?.setItem('token', res.data!.accessToken);
-          this.storage?.setItem('refreshToken', res.data!.refreshToken);
-        })
-      );
-  }
+login(email: string, password: string) {
+  return this.http
+    .post<ApiResponse<AuthResponse>>(
+      `${this.apiUrl}/auth/login`,
+      { email, password }
+    )
+    .pipe(
+      tap(res => {
+        this.storage?.setItem('token', res.data!.accessToken);
+        this.storage?.setItem('refreshToken', res.data!.refreshToken);
+      })
+    );
+}
 
   // --------------------
   // LOAD CURRENT USER (/me)
@@ -66,7 +69,7 @@ loadMe(): void {
     return;
   }
 
-  this.http.get<MeDto>(`${this.apiUrl}/me`).subscribe({
+  this.http.get<MeDto>(`${this.apiUrl}/auth/me`).subscribe({
     next: user => {
       this.currentUserSubject.next(user);
       this.authReadySubject.next(true);

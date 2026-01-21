@@ -20,6 +20,7 @@ import { take } from 'rxjs/operators';
 export class UserLoginComponent {
 
   // UI state
+  isSubmitting = false;
   showPassword = false;
   showForgotPassword = false;
 
@@ -71,14 +72,11 @@ onSubmit() {
 
   this.authService.login(email, password).subscribe({
     next: () => {
+      // Hydrate user in background (navbar, profile, etc.)
       this.authService.loadMe();
 
-      // 🔥 WAIT for user to be hydrated
-      this.authService.currentUser$
-        .pipe(take(1))
-        .subscribe(() => {
-          this.router.navigate(['/home']);
-        });
+      // 🔥 Navigate immediately
+      this.router.navigate(['/home']);
     },
     error: () => {
       this.loginErrorText = 'Incorrect email or password.';

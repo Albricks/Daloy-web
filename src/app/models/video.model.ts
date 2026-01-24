@@ -4,6 +4,7 @@ export type VideoStatus = 'not-started' | 'in-progress' | 'completed';
 export interface Video {
   id: string;
   title: string;
+  description: string;
   duration: string;          
   status: VideoStatus;
   thumbnailUrl: string;

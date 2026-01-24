@@ -1,0 +1,60 @@
+<div class="watch-layout" [class.theater]="theaterMode">
+
+  <!-- MAIN COLUMN -->
+  <div class="main-column">
+
+    <!-- Player -->
+    <div class="player-wrapper">
+      <video
+        class="video-player"
+        controls
+        preload="metadata"
+        [src]="video?.streamUrl"
+      ></video>
+
+      <!-- Theater toggle -->
+      <button class="theater-btn" (click)="toggleTheater()">
+        {{ theaterMode ? 'Default View' : 'Theater Mode' }}
+      </button>
+    </div>
+
+    <!-- Meta -->
+    <h1 class="title">{{ video?.title }}</h1>
+    <p class="description">{{ video?.description }}</p>
+
+  </div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" *ngIf="!theaterMode">
+
+  <h3 class="up-next">Up Next</h3>
+
+  <div
+    class="up-next-item"
+    *ngFor="let v of relatedVideos"
+    (click)="openVideo(v.id)"
+  >
+    <div class="thumb-wrapper">
+      <img
+        class="up-next-thumb"
+        [src]="v.thumbnailUrl"
+        alt="{{ v.title }}"
+      />
+      <span class="thumb-duration">{{ v.duration }}</span>
+    </div>
+
+    <div class="up-next-meta">
+      <div class="name">{{ v.title }}</div>
+        <!-- DESCRIPTION -->
+        <p class="up-next-desc">
+        {{ v.description }}
+        </p>
+      <div class="meta-row">
+        <span class="module">Financial Literacy</span>
+      </div>
+    </div>
+  </div>
+
+</aside>
+
+</div>

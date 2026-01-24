@@ -46,6 +46,14 @@ export const routes: Routes = [
       import('./component/core/video-list/video-list.component')
         .then(m => m.VideoListComponent),
   },
+
+  {
+    path: 'videos/:id',
+    loadComponent: () =>
+    import('./component/core/video-watch/video-watch.component')
+    .then(m => m.VideoWatchComponent),
+    },
+
   {
     path: 'diary',
     canActivate: [authGuard],

@@ -81,9 +81,14 @@ loadMe(): void {
   });
 }
 
+  updateProfile(data: FormData) {
+  return this.http.put(`${this.apiUrl}/profile/me`, data);
+}
+
   // --------------------
   // LOGOUT
   // --------------------
+
   logout(): void {
     this.storage?.removeItem('token');
     this.storage?.removeItem('refreshToken');

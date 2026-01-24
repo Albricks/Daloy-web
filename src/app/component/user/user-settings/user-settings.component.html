@@ -1,0 +1,87 @@
+<div class="auth-container">
+
+  <!-- LEFT PANEL (SAME AS REGISTER) -->
+  <div class="left-panel">
+    <h1>Daloy</h1>
+    <p>
+      Manage your account with confidence.<br />
+      Update your personal details and profile photo.
+    </p>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="settings-card">
+
+      <h2>Profile Settings</h2>
+      <p class="subtitle">Manage your personal information</p>
+
+      <!-- AVATAR -->
+      <div class="profile-upload">
+        <label for="avatar">
+          <div class="avatar-wrapper">
+            <img
+              *ngIf="avatarPreview; else placeholder"
+              [src]="avatarPreview"
+              alt="Avatar preview"
+            />
+            <ng-template #placeholder>
+              <div class="avatar-placeholder"></div>
+            </ng-template>
+          </div>
+        </label>
+
+        <input
+          type="file"
+          id="avatar"
+          accept="image/*"
+          hidden
+          (change)="onFileSelected($event)"
+        />
+
+        <span class="upload-text"><b>Change photo</b></span>
+      </div>
+
+      <!-- SUCCESS / ERROR -->
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- FORM -->
+      <form [formGroup]="profileForm" (ngSubmit)="save()">
+
+        <!-- USERNAME (READ ONLY) -->
+        <label>Username</label>
+        <input type="text" formControlName="username" />
+
+        <!-- EMAIL (READ ONLY) -->
+        <label>Email</label>
+        <input type="email" formControlName="email" />
+
+        <!-- FULL NAME -->
+        <label>Full Name</label>
+        <input type="text" formControlName="fullName" />
+
+        <!-- BIRTHDATE -->
+        <label>Birthdate</label>
+        <input type="date" formControlName="birthDate" />
+
+        <button type="submit" [disabled]="isSaving">
+          {{ isSaving ? 'Saving…' : 'Save Changes →' }}
+        </button>
+      </form>
+
+      <div class="divider"></div>
+
+      <!-- CHANGE PASSWORD -->
+      <button class="secondary-btn" (click)="goChangePassword()">
+        Change Password
+      </button>
+
+    </div>
+  </div>
+</div>

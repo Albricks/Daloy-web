@@ -64,8 +64,16 @@ export const routes: Routes = [
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./utility/profile/profile.component')
+      import('./component/user/profile/profile.component')
         .then(m => m.ProfileComponent),
+  },
+
+  {
+    path: 'profile-settings',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./component/user/user-settings/user-settings.component')
+        .then(m => m.UserSettingsComponent),
   },
 
   // ---------- MODULE SUB-ROUTES ----------

@@ -10,14 +10,24 @@
   <section class="controls">
     <select [(ngModel)]="selectedStatus">
       <option value="All">All Status</option>
-      <option value="New">New</option>
-      <option value="In Progress">In Progress</option>
-      <option value="Completed">Completed</option>
+      <option value="not-started">New</option>
+      <option value="in-progress">In Progress</option>
+      <option value="completed">Completed</option>
     </select>
   </section>
 
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    Loading videos...
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+
   <!-- Videos Grid -->
-  <section class="videos-grid">
+  <section class="videos-grid" *ngIf="!loading && !error">
     <article
       class="video-card"
       *ngFor="let video of filteredVideos"
@@ -25,7 +35,7 @@
     >
 
       <div class="thumb">
-        <img [src]="video.thumbnail" alt="video thumbnail" />
+        <img [src]="video.thumbnailUrl" alt="video thumbnail" />
 
         <div class="overlay">
           <span class="play-icon">▶</span>
@@ -35,9 +45,9 @@
 
         <span
           class="status-badge"
-          [ngClass]="video.status.toLowerCase().replace(' ', '-')"
+          [ngClass]="video.status"
         >
-          {{ video.status }}
+          {{ getStatusLabel(video.status) }}
         </span>
       </div>
 
@@ -45,5 +55,13 @@
 
     </article>
   </section>
+
+  <!-- Empty State -->
+  <div
+    *ngIf="!loading && !error && filteredVideos.length === 0"
+    class="empty-state"
+  >
+    No videos found for this status.
+  </div>
 
 </div>

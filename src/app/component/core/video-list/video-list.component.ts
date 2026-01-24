@@ -1,16 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
-type VideoStatus = 'New' | 'In Progress' | 'Completed';
-
-interface Video {
-  id: number;
-  title: string;
-  duration: string;
-  status: VideoStatus;
-  thumbnail: string;
-}
+import { Video, VideoStatus } from '../../../models/video.model';
+import { VideoService } from '../../../services/video.service';
 
 @Component({
   selector: 'app-video-list',
@@ -19,33 +13,39 @@ interface Video {
   templateUrl: './video-list.component.html',
   styleUrls: ['./video-list.component.css']
 })
-export class VideoListComponent {
+export class VideoListComponent implements OnInit {
 
   selectedStatus: 'All' | VideoStatus = 'All';
 
-  videos: Video[] = [
-    {
-      id: 1,
-      title: 'Introduction to Daloy',
-      duration: '5:32',
-      status: 'Completed',
-      thumbnail: 'assets/thumbs/video-1.jpg'
-    },
-    {
-      id: 2,
-      title: 'Understanding Modules',
-      duration: '12:10',
-      status: 'In Progress',
-      thumbnail: 'assets/thumbs/video-2.jpg'
-    },
-    {
-      id: 3,
-      title: 'Tracking Your Progress',
-      duration: '8:45',
-      status: 'New',
-      thumbnail: 'assets/thumbs/video-3.jpg'
-    }
-  ];
+  videos: Video[] = [];
+  loading = true;
+  error?: string;
+
+  constructor(
+    private videoService: VideoService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.loadVideos();
+  }
+
+  loadVideos() {
+    this.loading = true;
+
+    this.videoService.getVideos().subscribe({
+      next: videos => {
+        // Optional: sort by module + order
+        this.videos = videos.sort((a, b) => a.order - b.order);
+        this.loading = false;
+      },
+      error: err => {
+        console.error(err);
+        this.error = 'Failed to load videos';
+        this.loading = false;
+      }
+    });
+  }
 
   get filteredVideos(): Video[] {
     if (this.selectedStatus === 'All') {
@@ -54,7 +54,17 @@ export class VideoListComponent {
     return this.videos.filter(v => v.status === this.selectedStatus);
   }
 
-  openVideo(id: number) {
-    console.log('Open video', id);
+  // UI label mapping
+  getStatusLabel(status: VideoStatus): string {
+    switch (status) {
+      case 'not-started': return 'New';
+      case 'in-progress': return 'In Progress';
+      case 'completed': return 'Completed';
+      default: return 'New';
+    }
+  }
+
+  openVideo(id: string) {
+    this.router.navigate(['/videos', id]);
   }
 }

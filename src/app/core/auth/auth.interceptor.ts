@@ -7,6 +7,7 @@ import {
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -19,6 +20,10 @@ export class AuthInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
 
     const token = this.authService.token;
+
+    if (!req.url.startsWith(environment.apiUrl)) {
+      return next.handle(req);
+    }
 
     // If no token, pass request as-is
     if (!token) {

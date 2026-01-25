@@ -1,4 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -23,30 +27,43 @@ export class VideoListComponent implements OnInit {
 
   constructor(
     private videoService: VideoService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.loadVideos();
   }
 
+  // --------------------
+  // Load videos (STABLE)
+  // --------------------
   loadVideos() {
     this.loading = true;
+    this.videos = [];
 
     this.videoService.getVideos().subscribe({
       next: videos => {
-        // Optional: sort by module + order
-        this.videos = videos.sort((a, b) => a.order - b.order);
+        // Always reassign array (change detection friendly)
+        this.videos = [...videos].sort((a, b) => a.order - b.order);
         this.loading = false;
+
+        // 🔥 Force UI update
+        this.cdr.detectChanges();
       },
       error: err => {
         console.error(err);
         this.error = 'Failed to load videos';
         this.loading = false;
+
+        this.cdr.detectChanges();
       }
     });
   }
 
+  // --------------------
+  // Filtered videos (getter is OK)
+  // --------------------
   get filteredVideos(): Video[] {
     if (this.selectedStatus === 'All') {
       return this.videos;
@@ -54,7 +71,9 @@ export class VideoListComponent implements OnInit {
     return this.videos.filter(v => v.status === this.selectedStatus);
   }
 
+  // --------------------
   // UI label mapping
+  // --------------------
   getStatusLabel(status: VideoStatus): string {
     switch (status) {
       case 'not-started': return 'New';
@@ -64,6 +83,9 @@ export class VideoListComponent implements OnInit {
     }
   }
 
+  // --------------------
+  // Open video
+  // --------------------
   openVideo(id: string) {
     this.router.navigate(['/videos', id]);
   }

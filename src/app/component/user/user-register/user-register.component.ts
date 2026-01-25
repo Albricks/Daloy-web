@@ -1,4 +1,7 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -22,10 +25,15 @@ import { AuthService } from '../../../core/auth/auth.service';
 export class UserRegisterComponent {
 
   signupForm!: FormGroup;
+
   profilePreview: string | null = null;
+
   errorMessage: string | null = null;
   successMessage: string | null = null;
+
+  // 🔥 Stable loading/submitting pattern
   isSubmitting = false;
+  isLoading = false;
 
   // 🔐 Caps Lock detection
   capsLockOn = false;
@@ -33,12 +41,14 @@ export class UserRegisterComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.buildForm();
+        this.cdr.detectChanges();
       });
 
     this.buildForm();
@@ -48,6 +58,8 @@ export class UserRegisterComponent {
      FORM BUILDER
   ---------------------------- */
   private buildForm(): void {
+    this.isLoading = true;
+
     this.signupForm = this.fb.nonNullable.group(
       {
         username: ['', [Validators.required, Validators.pattern(/^[a-z0-9]+$/)]],
@@ -56,7 +68,7 @@ export class UserRegisterComponent {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', Validators.required],
-        profileImage: [null as File | null] // 👈 used for FormData
+        profileImage: [null as File | null]
       },
       {
         validators: [this.passwordMatchValidator]
@@ -68,6 +80,9 @@ export class UserRegisterComponent {
     this.successMessage = null;
     this.isSubmitting = false;
     this.capsLockOn = false;
+
+    this.isLoading = false;
+    this.cdr.detectChanges();
   }
 
   /* ---------------------------
@@ -101,17 +116,20 @@ export class UserRegisterComponent {
 
     const file = input.files[0];
 
-    // 👇 store File object (important)
+    // store File object
     this.signupForm.patchValue({ profileImage: file });
 
     const reader = new FileReader();
-    reader.onload = () => (this.profilePreview = reader.result as string);
+    reader.onload = () => {
+      this.profilePreview = reader.result as string;
+      this.cdr.detectChanges();
+    };
     reader.readAsDataURL(file);
   }
 
   /* ---------------------------
      SUBMIT (REGISTER)
-     🔥 SWITCHED TO FormData
+     🔥 STABLE PATTERN
   ---------------------------- */
   submit() {
     if (this.signupForm.invalid) {
@@ -120,6 +138,8 @@ export class UserRegisterComponent {
     }
 
     this.isSubmitting = true;
+    this.errorMessage = null;
+    this.successMessage = null;
 
     const {
       email,
@@ -130,7 +150,6 @@ export class UserRegisterComponent {
       profileImage
     } = this.signupForm.value;
 
-    // ✅ FormData instead of JSON
     const formData = new FormData();
     formData.append('email', email);
     formData.append('password', password);
@@ -144,8 +163,13 @@ export class UserRegisterComponent {
 
     this.authService.register(formData).subscribe({
       next: () => {
-        this.successMessage = '🎉 Account created successfully! Redirecting to login…';
+        this.successMessage =
+          '🎉 Account created successfully! Redirecting to login…';
+
         this.signupForm.disable();
+        this.isSubmitting = false;
+
+        this.cdr.detectChanges();
 
         setTimeout(() => {
           this.router.navigate(['/login']);
@@ -153,21 +177,23 @@ export class UserRegisterComponent {
       },
       error: err => {
         console.error(err);
+
         this.isSubmitting = false;
         this.errorMessage =
           err?.error?.message ?? 'Registration failed';
+
+        this.cdr.detectChanges();
       }
     });
   }
 
-get showPasswordRules(): boolean {
-  const passwordControl = this.f['password'];
-
-  return (
-    passwordControl.touched &&
-    passwordControl.invalid
-  );
-}
+  /* ---------------------------
+     HELPERS
+  ---------------------------- */
+  get showPasswordRules(): boolean {
+    const passwordControl = this.f['password'];
+    return passwordControl.touched && passwordControl.invalid;
+  }
 
   get f() {
     return this.signupForm.controls;

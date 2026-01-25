@@ -2,54 +2,86 @@
 
   <!-- TOP BAR -->
   <header class="reader-header">
-    <button class="back" (click)="backToPreview()">← Back</button>
-    <span class="title">{{ moduleTitle }}</span>
-    <button class="exit" (click)="backToModules()">Exit</button>
+    <button class="back" (click)="goBackToPreview()">
+      ← Back
+    </button>
+
+    <span class="title">{{ currentLesson?.title }}</span>
+
+    <button class="exit" (click)="exitToModules()">
+      Exit
+    </button>
   </header>
 
-  <!-- CONTENT -->
-  <article class="content fade-in">
+  <div class="reader-layout">
 
-    <h1>Introduction</h1>
-    <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-      tempor incididunt ut labore et dolore magna aliqua.
-    </p>
+    <!-- SIDEBAR -->
+    <aside class="lesson-sidebar">
+      <h4>Lessons</h4>
 
-    <p>
-      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
-      ut aliquip ex ea commodo consequat.
-    </p>
+      <ul>
+        <li
+          *ngFor="let lesson of lessons"
+          [class.active]="lesson.id === currentLesson?.id"
+          (click)="selectLesson(lesson)"
+        >
+          <span>
+            {{ lesson.order }}. {{ lesson.title }}
+          </span>
 
-    <h2>Core Concepts</h2>
-    <p>
-      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-      dolore eu fugiat nulla pariatur.
-    </p>
+          <small *ngIf="lesson.estimatedMinutes">
+            {{ lesson.estimatedMinutes }} min
+          </small>
+        </li>
+      </ul>
+    </aside>
 
-    <p>
-      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-      deserunt mollit anim id est laborum.
-    </p>
+    <!-- MAIN CONTENT -->
+    <main class="lesson-main" #lessonMain>
 
-    <h2>Best Practices</h2>
-    <p>
-      Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam
-      varius, turpis et commodo pharetra.
-    </p>
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading">
+        Loading lesson...
+      </div>
 
-    <p>
-      Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod
-      turpis.
-    </p>
+      <!-- 🔥 BLOB HTML RENDERED HERE -->
+      <div
+        *ngIf="!isLoading"
+        class="lesson-content fade-in"
+        [innerHTML]="lessonHtml">
+      </div>
 
-  </article>
-    <!-- QUIZ PROMPT -->
-    <div class="quiz-prompt">
-    <h3>Ready to test what you learned?</h3>
-    <p>Take a short quiz to check your understanding of this module.</p>
+      <!-- NEXT / PREVIOUS NAV -->
+      <div class="lesson-nav" *ngIf="!isLoading">
+        <button
+          class="nav-btn prev"
+          [disabled]="!hasPrevious"
+          (click)="goToPrevious()"
+        >
+          ← Previous
+        </button>
 
-    <button class="quiz-btn" (click)="goToQuiz()">
-        Take Quiz
-    </button>
+        <button
+          class="nav-btn next"
+          [disabled]="!hasNext"
+          (click)="goToNext()"
+        >
+          Next →
+        </button>
+      </div>
+
+      <!-- QUIZ CTA (Only for LAST Lesson) -->
+      <div
+        *ngIf="isLastLesson"
+        class="quiz-prompt"
+      >
+        <h3>Ready to test what you learned?</h3>
+        <p>Take a short quiz to check your understanding.</p>
+        <button class="quiz-btn" (click)="goToQuiz()">
+          Take Quiz
+        </button>
+      </div>
+
+    </main>
+  </div>
 </div>

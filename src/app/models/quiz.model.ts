@@ -1,19 +1,35 @@
-export interface ModuleQuiz {
+export interface ModuleQuizDto {
+  quizId: string;
   moduleId: string;
   title: string;
-  description: string;
-  passingScore: number; // percentage
-  questions: QuizQuestion[];
+  questions: QuizQuestionDto[];
 }
 
-export interface QuizQuestion {
-  id: string;
-  question: string;
-  options: QuizOption[];
-  correctOptionId: string;
+export interface QuizQuestionDto {
+  questionId: string;
+  questionText: string;
+  order: number;
+  choices: QuizChoiceDto[];
 }
 
-export interface QuizOption {
-  id: string;
+export interface QuizChoiceDto {
+  choiceId: string;
+  label: string;   // A, B, C, D
   text: string;
+}
+
+export interface SubmitQuizDto {
+  quizId: string;
+  answers: SubmitQuizAnswerDto[];
+}
+
+export interface SubmitQuizAnswerDto {
+  questionId: string;
+  selectedChoiceId: string;
+}
+
+export interface QuizResultDto {
+  totalQuestions: number;
+  correctAnswers: number;
+  scorePercentage: number;
 }

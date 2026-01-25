@@ -1,4 +1,7 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -22,6 +25,10 @@ export interface DiaryEntry {
   styleUrls: ['./diary.component.css']
 })
 export class DiaryComponent {
+
+  // 🔥 Stable loading pattern (future API-ready)
+  isLoading = false;
+  loadError: string | null = null;
 
   viewMode: ViewMode = 'daily';
 
@@ -50,7 +57,13 @@ export class DiaryComponent {
   isPanelOpen = false;
   selectedEntry: DiaryEntry | null = null;
 
-  /* ===== Computed totals ===== */
+  constructor(
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  /* ============================
+     Computed totals
+  ============================ */
   get totalBudget() {
     return this.entries.reduce((sum, e) => sum + e.budget, 0);
   }
@@ -63,15 +76,21 @@ export class DiaryComponent {
     return this.totalBudget - this.totalSpent;
   }
 
-  /* ===== View toggle ===== */
+  /* ============================
+     View toggle
+  ============================ */
   setView(mode: ViewMode) {
     this.viewMode = mode;
+    this.cdr.detectChanges();
   }
 
-  /* ===== Add / Edit ===== */
+  /* ============================
+     Add / Edit
+  ============================ */
   openAddEntry() {
     const event = new CustomEvent('close-profile-menu');
     window.dispatchEvent(event);
+
     const today = new Date().toISOString().split('T')[0];
     const existing = this.entries.find(e => e.date === today);
 
@@ -88,46 +107,73 @@ export class DiaryComponent {
         };
 
     this.isPanelOpen = true;
+    this.cdr.detectChanges();
   }
 
   openEditEntry(entry: DiaryEntry) {
     this.selectedEntry = { ...entry };
     this.isPanelOpen = true;
+    this.cdr.detectChanges();
   }
 
   closePanel() {
     this.isPanelOpen = false;
     this.selectedEntry = null;
+    this.cdr.detectChanges();
   }
 
   saveEntry() {
     if (!this.selectedEntry) return;
 
-    const index = this.entries.findIndex(e => e.date === this.selectedEntry!.date);
+    this.isLoading = true;
+
+    const index = this.entries.findIndex(
+      e => e.date === this.selectedEntry!.date
+    );
 
     if (index > -1) {
-      // Update
-      this.entries[index] = {
+      // Update (reassign array for change detection)
+      const updated = {
         ...this.selectedEntry,
         updatedAt: new Date().toISOString()
       };
+
+      this.entries = this.entries.map((e, i) =>
+        i === index ? updated : e
+      );
+
     } else {
-      // Create
-      this.entries.unshift({
+      // Create (prepend new entry)
+      const created: DiaryEntry = {
         ...this.selectedEntry,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      });
+      };
+
+      this.entries = [created, ...this.entries];
     }
 
+    this.isLoading = false;
     this.closePanel();
+
+    // 🔥 Force UI update
+    this.cdr.detectChanges();
   }
 
   deleteEntry() {
     if (!this.selectedEntry) return;
 
-    this.entries = this.entries.filter(e => e.id !== this.selectedEntry!.id);
+    this.isLoading = true;
+
+    // Reassign array (change detection friendly)
+    this.entries = this.entries.filter(
+      e => e.id !== this.selectedEntry!.id
+    );
+
+    this.isLoading = false;
     this.closePanel();
+
+    this.cdr.detectChanges();
   }
 }

@@ -1,19 +1,13 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
-type ModuleStatus = 'New' | 'In Progress' | 'Completed';
-
-interface Module {
-  id: string;
-  title: string;
-  description: string;
-  level: string;
-  duration: string;
-  lessons: number;
-  status: ModuleStatus;
-  objectives: string[];
-}
+import { ModulesService } from '../../../services/modules.service';
+import { ModulePreviewDto } from '../../../models/module-preview.model';
 
 @Component({
   selector: 'app-module-preview',
@@ -22,39 +16,80 @@ interface Module {
   templateUrl: './module-preview.component.html',
   styleUrls: ['./module-preview.component.css']
 })
-export class ModulePreviewComponent {
+export class ModulePreviewComponent implements OnInit {
 
-  module!: Module;
+  module?: ModulePreviewDto;
+  isLoading = true;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
-  ) {
-    const id = this.route.snapshot.paramMap.get('id');
+    private router: Router,
+    private modulesService: ModulesService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-    // TEMP: mock (backend later)
-    this.module = {
-      id: id || '1',
-      title: 'Angular Fundamentals',
-      description: 'Understand components, routing, and best practices.',
-      level: 'Beginner',
-      duration: '20 mins',
-      lessons: 6,
-      status: 'In Progress',
-      objectives: [
-        'Understand Angular architecture',
-        'Create components and templates',
-        'Use routing and navigation',
-        'Apply best practices'
-      ]
-    };
+  ngOnInit() {
+    // React to route param changes (fixes reuse + stale UI)
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      console.log('ROUTE ID (sub):', id);
+
+      if (id) {
+        this.loadModule(id);
+      } else {
+        console.error('NO MODULE ID IN ROUTE');
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
+  // --------------------
+  // Load module (STABLE)
+  // --------------------
+  loadModule(id: string) {
+    this.isLoading = true;
+    this.module = undefined;
+
+    this.modulesService.getModule(id).subscribe({
+      next: module => {
+        this.module = module;
+        this.isLoading = false;
+
+        // 🔥 Force UI update (fixes "only updates after click")
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        console.error('MODULE API ERROR FULL:', {
+          status: err.status,
+          message: err.message,
+          error: err.error
+        });
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // --------------------
+  // Navigation
+  // --------------------
   startModule() {
+    if (!this.module) return;
     this.router.navigate(['/modules/read', this.module.id]);
   }
 
   goBack() {
     this.router.navigate(['/modules']);
+  }
+
+  // --------------------
+  // Status CSS class
+  // --------------------
+  get statusClass(): string {
+    return (this.module?.status || '')
+      .toLowerCase()
+      .replace(' ', '-');
   }
 }

@@ -1,49 +1,70 @@
-<div class="module-preview">
+<div class="module-preview" *ngIf="!isLoading && module">
 
   <a class="back-link" (click)="goBack()">← Back to Modules</a>
 
   <div class="hero">
-    <div class="hero-left">
-      <span class="status in-progress">In Progress</span>
 
-      <h1>Angular Fundamentals</h1>
+    <!-- LEFT -->
+    <div class="hero-left">
+
+      <span
+        class="status"
+        [ngClass]="statusClass"
+      >
+        {{ module.status }}
+      </span>
+
+      <h1>{{ module.title }}</h1>
+
       <p class="subtitle">
-        Understand components, routing, and best practices.
+        {{ module.description }}
       </p>
 
       <section class="learn">
         <h3>What you’ll learn</h3>
         <ul>
-          <li>Understand Angular architecture</li>
-          <li>Create components and templates</li>
-          <li>Use routing and navigation</li>
-          <li>Apply best practices</li>
+          <li *ngFor="let obj of module.objectives">
+            {{ obj }}
+          </li>
         </ul>
       </section>
+
     </div>
 
+    <!-- RIGHT CARD -->
     <aside class="hero-right">
+
       <div class="meta">
         <div>
           <span>Level</span>
-          <strong>Beginner</strong>
+          <strong>{{ module.level }}</strong>
         </div>
+
         <div>
           <span>Duration</span>
-          <strong>20 mins</strong>
+          <strong>{{ module.duration }}</strong>
         </div>
+
         <div>
           <span>Lessons</span>
-          <strong>6</strong>
+          <strong>{{ module.lessons }}</strong>
         </div>
       </div>
 
-    <button class="cta" (click)="startModule()">
-        Continue Module
-    </button>
+      <button class="cta" (click)="startModule()">
+        {{ module.status === 'In Progress' ? 'Continue Module' : 'Start Module' }}
+      </button>
 
-      <p class="hint">You can stop anytime and resume later.</p>
+      <p class="hint">
+        You can stop anytime and resume later.
+      </p>
+
     </aside>
-  </div>
 
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="module-preview" *ngIf="isLoading">
+  <p>Loading module...</p>
 </div>

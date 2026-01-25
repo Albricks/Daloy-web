@@ -3,11 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Video } from '../models/video.model';
 import { Observable } from 'rxjs';
 import { VideoWatch } from '../models/video-watch.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class VideoService {
-  private readonly baseUrl = 'https://localhost:44309/api/videos';
-
+  private readonly baseUrl = `${environment.apiUrl}/videos`;
   constructor(private http: HttpClient) {}
 
   getVideos(): Observable<Video[]> {

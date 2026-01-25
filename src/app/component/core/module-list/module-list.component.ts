@@ -1,7 +1,14 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+
+import { ModulesService } from '../../../services/modules.service';
+import { ModuleListDto } from '../../../models/module-list.model';
 
 @Component({
   selector: 'app-modules-list',
@@ -10,7 +17,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './module-list.component.html',
   styleUrls: ['./module-list.component.css']
 })
-export class ModulesListComponent {
+export class ModulesListComponent implements OnInit {
 
   isLoading = true;
 
@@ -18,46 +25,53 @@ export class ModulesListComponent {
   selectedLevel = 'All';
   selectedStatus = 'All';
 
-  modules = [
-    {
-      id: 1,
-      title: 'Introduction to Web Security',
-      description: 'Learn the fundamentals of securing modern web applications.',
-      level: 'Beginner',
-      duration: '15 mins',
-      status: 'New',
-      progress: 0
-    },
-    {
-      id: 2,
-      title: 'Angular Fundamentals',
-      description: 'Understand components, routing, and best practices.',
-      level: 'Beginner',
-      duration: '20 mins',
-      status: 'In Progress',
-      progress: 45
-    },
-    {
-      id: 3,
-      title: 'API Design Basics',
-      description: 'Design clean, scalable REST APIs.',
-      level: 'Intermediate',
-      duration: '25 mins',
-      status: 'Completed',
-      progress: 100
-    }
-  ];
+  modules: ModuleListDto[] = [];
 
-  constructor(private router: Router) {
-    // simulate API loading
-    setTimeout(() => this.isLoading = false, 1200);
+  constructor(
+    private router: Router,
+    private modulesService: ModulesService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.loadModules();
   }
 
-  get filteredModules() {
+  // --------------------
+  // Load modules (STABLE)
+  // --------------------
+  loadModules() {
+    this.isLoading = true;
+    this.modules = [];
+
+    this.modulesService.getModules().subscribe({
+      next: modules => {
+        // Always reassign array (change detection friendly)
+        this.modules = [...modules];
+        this.isLoading = false;
+
+        // 🔥 Force UI update (fixes "only updates after click")
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        console.error('Failed to load modules', err);
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // --------------------
+  // Filtered modules
+  // --------------------
+  get filteredModules(): ModuleListDto[] {
+    const search = this.searchTerm.toLowerCase();
+
     return this.modules.filter(m => {
       const matchesSearch =
-        m.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        m.description.toLowerCase().includes(this.searchTerm.toLowerCase());
+        m.title.toLowerCase().includes(search) ||
+        m.description.toLowerCase().includes(search);
 
       const matchesLevel =
         this.selectedLevel === 'All' || m.level === this.selectedLevel;
@@ -69,11 +83,14 @@ export class ModulesListComponent {
     });
   }
 
-  openModule(id: number): void {
+  // --------------------
+  // Navigation
+  // --------------------
+  openModule(id: string): void {
     this.router.navigate(['/modules/preview', id]);
   }
 
-  continueModule(id: number, event: Event): void {
+  continueModule(id: string, event: Event): void {
     event.stopPropagation();
     this.router.navigate(['/modules/read', id]);
   }

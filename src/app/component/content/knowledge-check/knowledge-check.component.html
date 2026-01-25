@@ -1,5 +1,5 @@
-<div *ngIf="!finished" class="quiz-wrapper">
-  <h2>Knowledge Check</h2>
+<div *ngIf="quiz && !finished" class="quiz-wrapper">
+  <h2>{{ quiz.title }}</h2>
   <p class="subtitle">Let’s see what stuck 👀</p>
 
   <div class="progress">
@@ -8,14 +8,17 @@
   </div>
 
   <div class="question-card">
-    <h3>{{ quiz.questions[currentQuestionIndex].question }}</h3>
+    <h3>
+      {{ quiz.questions[currentQuestionIndex].questionText }}
+    </h3>
 
     <div class="options">
       <button
-        *ngFor="let option of quiz.questions[currentQuestionIndex].options"
-        (click)="selectOption(option.id)"
-        [class.selected]="selectedOptionId === option.id"
+        *ngFor="let option of quiz.questions[currentQuestionIndex].choices"
+        (click)="selectOption(option.choiceId)"
+        [class.selected]="selectedOptionId === option.choiceId"
       >
+        <strong>{{ option.label }}.</strong>
         {{ option.text }}
       </button>
     </div>
@@ -23,7 +26,7 @@
 
   <button
     class="next-btn"
-    [disabled]="!selectedOptionId"
+    [disabled]="!selectedOptionId || submitting"
     (click)="next()"
   >
     {{ currentQuestionIndex === quiz.questions.length - 1
@@ -32,15 +35,39 @@
   </button>
 </div>
 
-<div *ngIf="finished" class="result-wrapper">
-  <h2>Nice work 🎉</h2>
-  <div class="score">{{ scorePercent }}%</div>
+<div *ngIf="finished && result" class="result-wrapper">
+  <h2>Quiz Complete 🎉</h2>
 
-  <p *ngIf="scorePercent >= quiz.passingScore" class="pass">
-    You’re good to move on 🚀
+  <div class="score">
+    {{ result.scorePercentage }}%
+  </div>
+
+  <p class="summary">
+    You got <strong>{{ result.correctAnswers }}</strong> out of
+    <strong>{{ result.totalQuestions }}</strong> correct.
   </p>
 
-  <p *ngIf="scorePercent < quiz.passingScore" class="fail">
-    No stress — try again when you’re ready 💪
-  </p>
+  <div
+    class="status pass"
+    *ngIf="result.scorePercentage >= 70"
+  >
+    ✅ Great job! You’re ready to move on.
+  </div>
+
+  <div
+    class="status fail"
+    *ngIf="result.scorePercentage < 70"
+  >
+    ❌ Don’t worry — review the lesson and try again.
+  </div>
+
+  <div class="post-actions">
+    <button class="restart-btn" (click)="restartQuiz()">
+      Try Again
+    </button>
+
+    <button class="next-btn" (click)="goToNextModule()">
+      Continue Learning →
+    </button>
+  </div>
 </div>

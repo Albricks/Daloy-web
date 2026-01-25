@@ -8,7 +8,10 @@
         <p>Track your daily spending and reflect on your progress.</p>
       </div>
 
-      <button class="add-btn" (click)="openAddEntry()">+ Add Entry</button>
+      <div class="header-actions">
+        <button class="add-btn" (click)="openAddEntry()">+ Add Entry</button>
+        <button class="export-btn" (click)="exportCsv()">⬇ Export CSV</button>
+      </div>
     </div>
   </header>
 
@@ -21,22 +24,59 @@
 
   <!-- SUMMARY -->
   <section class="summary">
-    <div class="summary-card budget">
-      <span>Budget</span>
-      <h2>{{ totalBudget }}</h2>
-    </div>
-    <div class="summary-card spent">
-      <span>Spent</span>
-      <h2>{{ totalSpent }}</h2>
-    </div>
-    <div class="summary-card saved">
-      <span>Saved</span>
-      <h2>{{ totalSaved }}</h2>
-    </div>
+
+    <!-- DAILY -->
+    <ng-container *ngIf="viewMode === 'daily'">
+      <div class="summary-card budget">
+        <span>Budget (Daily)</span>
+        <h2>{{ totalBudget }}</h2>
+      </div>
+      <div class="summary-card spent">
+        <span>Spent (Daily)</span>
+        <h2>{{ totalSpent }}</h2>
+      </div>
+      <div class="summary-card saved">
+        <span>Saved (Daily)</span>
+        <h2>{{ totalSaved }}</h2>
+      </div>
+    </ng-container>
+
+    <!-- WEEKLY -->
+    <ng-container *ngIf="viewMode === 'weekly' && weeklySummary">
+      <div class="summary-card budget">
+        <span>Budget (Weekly)</span>
+        <h2>{{ weeklySummary.totalBudget }}</h2>
+      </div>
+      <div class="summary-card spent">
+        <span>Spent (Weekly)</span>
+        <h2>{{ weeklySummary.totalSpent }}</h2>
+      </div>
+      <div class="summary-card saved">
+        <span>Saved (Weekly)</span>
+        <h2>{{ weeklySummary.totalSaved }}</h2>
+      </div>
+    </ng-container>
+
+    <!-- MONTHLY -->
+    <ng-container *ngIf="viewMode === 'monthly' && monthlySummary">
+      <div class="summary-card budget">
+        <span>Budget (Monthly)</span>
+        <h2>{{ monthlySummary.totalBudget }}</h2>
+      </div>
+      <div class="summary-card spent">
+        <span>Spent (Monthly)</span>
+        <h2>{{ monthlySummary.totalSpent }}</h2>
+      </div>
+      <div class="summary-card saved">
+        <span>Saved (Monthly)</span>
+        <h2>{{ monthlySummary.totalSaved }}</h2>
+      </div>
+    </ng-container>
+
   </section>
 
   <!-- ENTRIES -->
-  <section class="entries">
+  <section class="entries" *ngIf="viewMode === 'daily'">
     <article
       class="entry"
       *ngFor="let entry of entries"
@@ -47,7 +87,7 @@
       <div class="values">
         <span>Budget: {{ entry.budget }}</span>
         <span>Spent: {{ entry.spent }}</span>
-        <span class="saved">Saved: {{ entry.budget - entry.spent }}</span>
+        <span class="saved">Saved: {{ entry.saved }}</span>
       </div>
 
       <p class="notes" *ngIf="entry.notes">{{ entry.notes }}</p>
@@ -65,15 +105,20 @@
     <button (click)="closePanel()">✕</button>
   </header>
 
-    <form (ngSubmit)="saveEntry(); $event.preventDefault()">
+  <form (ngSubmit)="saveEntry(); $event.preventDefault()">
+
     <label>
       Budget
-      <input type="number" [(ngModel)]="selectedEntry!.budget" name="budget" required />
+      <input type="number" min="0" step="0.01"
+             [(ngModel)]="selectedEntry!.budget"
+             name="budget" required />
     </label>
 
     <label>
       Spent
-      <input type="number" [(ngModel)]="selectedEntry!.spent" name="spent" required />
+      <input type="number" min="0" step="0.01"
+             [(ngModel)]="selectedEntry!.spent"
+             name="spent" required />
     </label>
 
     <div class="saved">
@@ -86,7 +131,9 @@
     </label>
 
     <footer>
-      <button type="button" class="danger" *ngIf="selectedEntry?.id" (click)="deleteEntry()">
+      <button type="button" class="danger"
+              *ngIf="selectedEntry?.id"
+              (click)="deleteEntry()">
         Delete
       </button>
 

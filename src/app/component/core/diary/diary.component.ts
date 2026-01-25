@@ -1,17 +1,20 @@
 import {
   Component,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DiaryApiService, DiarySummary } from '../../../services/diary-api.service';
 
 type ViewMode = 'daily' | 'weekly' | 'monthly';
 
 export interface DiaryEntry {
   id: string;
-  date: string; // ISO date
+  date: string;
   budget: number;
   spent: number;
+  saved: number;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -24,45 +27,66 @@ export interface DiaryEntry {
   templateUrl: './diary.component.html',
   styleUrls: ['./diary.component.css']
 })
-export class DiaryComponent {
+export class DiaryComponent implements OnInit {
 
-  // 🔥 Stable loading pattern (future API-ready)
   isLoading = false;
   loadError: string | null = null;
 
   viewMode: ViewMode = 'daily';
 
-  entries: DiaryEntry[] = [
-    {
-      id: '1',
-      date: '2026-01-01',
-      budget: 100,
-      spent: 80,
-      notes: 'Bought groceries',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: '2',
-      date: '2026-01-02',
-      budget: 120,
-      spent: 90,
-      notes: 'Lunch with friends',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
+  entries: DiaryEntry[] = [];
 
-  /* Slide-in panel state */
+  // 🔥 Server-side summaries
+  weeklySummary: DiarySummary | null = null;
+  monthlySummary: DiarySummary | null = null;
+
   isPanelOpen = false;
   selectedEntry: DiaryEntry | null = null;
 
   constructor(
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private diaryApi: DiaryApiService
   ) {}
 
+  // ============================
+  // INIT
+  // ============================
+  ngOnInit() {
+    this.loadEntries();
+    this.loadSummaries();
+  }
+
+  loadEntries() {
+    this.isLoading = true;
+    this.loadError = null;
+
+    this.diaryApi.getAll().subscribe({
+      next: (res) => {
+        this.entries = res;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadError = 'Failed to load diary entries';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadSummaries() {
+    this.diaryApi.getWeeklySummary().subscribe(res => {
+      this.weeklySummary = res;
+      this.cdr.detectChanges();
+    });
+
+    this.diaryApi.getMonthlySummary().subscribe(res => {
+      this.monthlySummary = res;
+      this.cdr.detectChanges();
+    });
+  }
+
   /* ============================
-     Computed totals
+     Totals (daily = from entries)
   ============================ */
   get totalBudget() {
     return this.entries.reduce((sum, e) => sum + e.budget, 0);
@@ -73,7 +97,7 @@ export class DiaryComponent {
   }
 
   get totalSaved() {
-    return this.totalBudget - this.totalSpent;
+    return this.entries.reduce((sum, e) => sum + e.saved, 0);
   }
 
   /* ============================
@@ -82,6 +106,20 @@ export class DiaryComponent {
   setView(mode: ViewMode) {
     this.viewMode = mode;
     this.cdr.detectChanges();
+  }
+
+  /* ============================
+     Export CSV
+  ============================ */
+  exportCsv() {
+    this.diaryApi.exportCsv().subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'budget-diary.csv';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
   }
 
   /* ============================
@@ -101,6 +139,7 @@ export class DiaryComponent {
           date: today,
           budget: 0,
           spent: 0,
+          saved: 0,
           notes: '',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -127,53 +166,39 @@ export class DiaryComponent {
 
     this.isLoading = true;
 
-    const index = this.entries.findIndex(
-      e => e.date === this.selectedEntry!.date
-    );
-
-    if (index > -1) {
-      // Update (reassign array for change detection)
-      const updated = {
-        ...this.selectedEntry,
-        updatedAt: new Date().toISOString()
-      };
-
-      this.entries = this.entries.map((e, i) =>
-        i === index ? updated : e
-      );
-
-    } else {
-      // Create (prepend new entry)
-      const created: DiaryEntry = {
-        ...this.selectedEntry,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      this.entries = [created, ...this.entries];
-    }
-
-    this.isLoading = false;
-    this.closePanel();
-
-    // 🔥 Force UI update
-    this.cdr.detectChanges();
+    this.diaryApi.upsert({
+      entryDate: this.selectedEntry.date,
+      budget: this.selectedEntry.budget,
+      spent: this.selectedEntry.spent,
+      notes: this.selectedEntry.notes
+    }).subscribe({
+      next: () => {
+        this.loadEntries();
+        this.loadSummaries();
+        this.closePanel();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        alert(err?.error || 'Failed to save entry');
+      }
+    });
   }
 
   deleteEntry() {
-    if (!this.selectedEntry) return;
+    if (!this.selectedEntry?.id) return;
 
     this.isLoading = true;
 
-    // Reassign array (change detection friendly)
-    this.entries = this.entries.filter(
-      e => e.id !== this.selectedEntry!.id
-    );
-
-    this.isLoading = false;
-    this.closePanel();
-
-    this.cdr.detectChanges();
+    this.diaryApi.delete(this.selectedEntry.id).subscribe({
+      next: () => {
+        this.loadEntries();
+        this.loadSummaries();
+        this.closePanel();
+      },
+      error: () => {
+        this.isLoading = false;
+        alert('Failed to delete entry');
+      }
+    });
   }
 }

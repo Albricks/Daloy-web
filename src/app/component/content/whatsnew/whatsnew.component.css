@@ -78,14 +78,18 @@
 
 /* MEDIA PLACEHOLDERS */
 .media {
-  height: 150px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: #0d2c6c;
+height: 150px;
+border-radius: 12px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-weight: 600;
+font-size: 14px;
+color: #0d2c6c;
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+background-color: #f4f7fb;
 }
 
 .placeholder {
@@ -103,4 +107,47 @@
   .whatsnew-page {
     padding: 40px 20px;
   }
+}
+
+/* LOADING / EMPTY STATES */
+.muted {
+  font-size: 14px;
+  color: #888;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* SKELETON FEEL FOR PLACEHOLDERS (optional polish) */
+.media.placeholder {
+  position: relative;
+  overflow: hidden;
+}
+
+.media.placeholder::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150px;
+  width: 150px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -150px;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.card:active {
+transform: translateY(-2px);
 }

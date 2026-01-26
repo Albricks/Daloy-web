@@ -10,21 +10,45 @@
   padding: 32px 40px;
   border-radius: 18px;
   margin-bottom: 40px;
+
+  display: flex;
+  align-items: center; /* better vertical balance */
 }
 
 .profile-info {
   display: flex;
   gap: 24px;
   align-items: center;
+  min-height: 160px; /* balances tall header */
 }
 
+/* AVATAR */
 .avatar.large {
   width: 150px;
   height: 150px;
   border-radius: 50%;
   background: #d1d5db;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* clip image to circle */
+  flex-shrink: 0;
 }
 
+.avatar.large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fill circle nicely */
+}
+
+.avatar-fallback {
+  font-size: 48px;
+  font-weight: 700;
+  color: #475569;
+}
+
+/* DETAILS */
 .details h2 {
   font-size: 22px;
   margin: 0;
@@ -35,24 +59,29 @@
   margin: 6px 0 16px;
 }
 
+/* PROGRESS */
 .progress-row {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
   margin-bottom: 8px;
+  max-width: 420px;
 }
 
 .progress-bar {
-  width: 500px; 
+  width: 100%;
+  max-width: 420px; /* responsive instead of fixed 500px */
   height: 15px;
   background: #e5e7eb;
   border-radius: 999px;
+  overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #7c3aed, #6366f1);
   border-radius: 999px;
+  transition: width 0.3s ease;
 }
 
 /* SECTIONS */
@@ -88,19 +117,19 @@
   font-size: 13.5px;
   color: #6b7280;
 }
+
+/* GRID */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 28px;
 }
 
-.badge {
-  display: inline-block;
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #ecfeff;
-  color: #0369a1;
+/* BADGES */
+.badge-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .status-badge {
@@ -109,11 +138,6 @@
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
-  margin-bottom: 8px;
-}
-.badge-row {
-  display: flex;
-  gap: 8px;
 }
 
 .level-badge {
@@ -137,15 +161,21 @@
   color: #92400e;
 }
 
+/* RESPONSIVE */
 @media (max-width: 768px) {
-   .card {
-    padding: 20px;
+  .profile-page {
+    padding: 24px 20px;
+  }
+
+  .profile-header {
+    padding: 24px;
   }
 
   .profile-info {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+    min-height: auto;
   }
 
   .avatar.large {
@@ -153,9 +183,17 @@
     height: 72px;
   }
 
+  .avatar-fallback {
+    font-size: 28px;
+  }
+
+  .progress-row,
   .progress-bar {
-    width: 100%;
-    max-width: none;
+    max-width: 100%;
+  }
+
+  .card {
+    padding: 20px;
   }
 
   .card-grid {

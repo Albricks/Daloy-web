@@ -4,62 +4,28 @@
   <!-- PROFILE HEADER -->
 <div class="profile-header">
   <div class="profile-info">
-    <div class="avatar large"></div>
+    <div class="avatar large">
+      <img
+        *ngIf="user?.avatarUrl; else avatarFallback"
+        [src]="user?.avatarUrl"
+        alt="Profile Avatar"
+      />
+
+      <ng-template #avatarFallback>
+        <div class="avatar-fallback">
+          {{ user?.fullName?.charAt(0) || 'U' }}
+        </div>
+      </ng-template>
+    </div>
 
     <div class="details">
-      <h2>{{ user.name }}</h2>
-      <p class="email">{{ user.email }}</p>
+    <h2>{{ user?.fullName }}</h2>
+    <p class="email">{{ user?.email }}</p>
 
       <div class="progress-row">
         <span class="label">Progress</span>
-        <span class="value">{{ user.progress }}%</span>
-      </div>
-
-      <div class="progress-bar">
-        <div
-          class="progress-fill"
-          [style.width.%]="user.progress">
-        </div>
       </div>
     </div>
   </div>
 </div>
-
-  <!-- RECENT MODULES -->
-  <section class="section">
-    <h3>Recently Visited Modules</h3>
-
-    <div class="card-grid">
-        <div class="card" *ngFor="let module of recentModules">
-        <div class="badge-row">
-            <span class="status-badge" [ngClass]="module.status">
-            {{ module.status === 'completed' ? 'Completed' : 'In Progress' }}
-            </span>
-
-            <span class="level-badge">{{ module.level }}</span>
-        </div>
-
-        <h4>{{ module.title }}</h4>
-        <p>{{ module.duration }} • {{ module.modules }} modules</p>
-        </div>
-
-    </div>
-  </section>
-
-  <!-- RECENT VIDEOS -->
-  <section class="section">
-    <h3>Recently Watched Videos</h3>
-
-    <div class="card-grid">
-        <div class="card video" *ngFor="let video of recentVideos">
-        <span class="status-badge" [ngClass]="video.status">
-            {{ video.status === 'completed' ? 'Completed' : 'In Progress' }}
-        </span>
-
-        <h4>{{ video.title }}</h4>
-        <p>{{ video.duration }}</p>
-        </div>
-    </div>
-  </section>
-
 </div>

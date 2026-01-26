@@ -111,3 +111,25 @@
     grid-template-columns: 1fr;
   }
 }
+
+.features .image {
+  height: 150px;
+  border-radius: 12px;
+  overflow: hidden;          /* clip image to rounded corners */
+  background: #f4f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.features .feature-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;      /* ✅ no zoom, no crop */
+  padding: 8px;             /* breathing room */
+}
+
+/* Optional per-type tweaks */
+.features .feature-img.videos {
+  object-fit: cover;        /* if you want videos more immersive */
+}

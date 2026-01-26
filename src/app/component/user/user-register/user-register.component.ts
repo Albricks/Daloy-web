@@ -1,7 +1,4 @@
-import {
-  Component,
-  ChangeDetectorRef
-} from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -11,8 +8,7 @@ import {
   ValidationErrors,
   FormGroup
 } from '@angular/forms';
-import { Router, RouterLink, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -23,34 +19,22 @@ import { AuthService } from '../../../core/auth/auth.service';
   styleUrls: ['./user-register.component.css']
 })
 export class UserRegisterComponent {
-
   signupForm!: FormGroup;
 
   profilePreview: string | null = null;
-
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  // 🔥 Stable loading/submitting pattern
   isSubmitting = false;
   isLoading = false;
-
-  // 🔐 Caps Lock detection
   capsLockOn = false;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private authService: AuthService
   ) {
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this.buildForm();
-        this.cdr.detectChanges();
-      });
-
+    // ✅ Build once — no router events, no manual CDR
     this.buildForm();
   }
 
@@ -82,7 +66,6 @@ export class UserRegisterComponent {
     this.capsLockOn = false;
 
     this.isLoading = false;
-    this.cdr.detectChanges();
   }
 
   /* ---------------------------
@@ -115,21 +98,20 @@ export class UserRegisterComponent {
     if (!input.files || !input.files[0]) return;
 
     const file = input.files[0];
-
-    // store File object
     this.signupForm.patchValue({ profileImage: file });
 
     const reader = new FileReader();
     reader.onload = () => {
-      this.profilePreview = reader.result as string;
-      this.cdr.detectChanges();
+      // Force Angular to pick up async FileReader change
+      Promise.resolve().then(() => {
+        this.profilePreview = reader.result as string;
+      });
     };
-    reader.readAsDataURL(file);
+reader.readAsDataURL(file);
   }
 
   /* ---------------------------
      SUBMIT (REGISTER)
-     🔥 STABLE PATTERN
   ---------------------------- */
   submit() {
     if (this.signupForm.invalid) {
@@ -169,20 +151,15 @@ export class UserRegisterComponent {
         this.signupForm.disable();
         this.isSubmitting = false;
 
-        this.cdr.detectChanges();
-
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
       },
       error: err => {
         console.error(err);
-
         this.isSubmitting = false;
         this.errorMessage =
           err?.error?.message ?? 'Registration failed';
-
-        this.cdr.detectChanges();
       }
     });
   }

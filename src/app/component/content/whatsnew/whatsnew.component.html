@@ -10,53 +10,67 @@
   <section class="section">
     <h2>🎬 Latest Videos</h2>
 
-    <div class="cards">
-      <div class="card" (click)="goTo('/videos')">
-        <div class="media placeholder">Video Placeholder</div>
-        <h3>New Learning Series</h3>
-        <p>Explore our newest educational video content.</p>
+    <ng-container *ngIf="latestVideos$ | async as videos; else videosLoading">
+      <div class="cards" *ngIf="videos.length; else noVideos">
+        <div
+          class="card"
+          *ngFor="let video of videos"
+          (click)="goTo('/videos')"
+        >
+        <div
+          class="media"
+          [class.placeholder]="!video.thumbnailUrl"
+          [style.backgroundImage]="
+            video.thumbnailUrl ? 'url(' + video.thumbnailUrl + ')' : null
+          "
+        >
+          <span *ngIf="!video.thumbnailUrl">Video</span>
+        </div>
+          <h3>{{ video.title }}</h3>
+          <p>{{ video.description }}</p>
+        </div>
       </div>
+    </ng-container>
 
-      <div class="card" (click)="goTo('/videos')">
-        <div class="media placeholder">Video Placeholder</div>
-        <h3>Featured Talk</h3>
-        <p>Insights from experts and practitioners.</p>
-      </div>
+    <ng-template #videosLoading>
+      <p class="muted">Loading videos...</p>
+    </ng-template>
 
-      <div class="card" (click)="goTo('/videos')">
-        <div class="media placeholder">Video Placeholder</div>
-        <h3>Demand and Supply</h3>
-        <p>Basic Demand and Supply Logic</p>
-      </div>
-    </div>
+    <ng-template #noVideos>
+      <p class="muted">No videos yet.</p>
+    </ng-template>
   </section>
 
-  <!-- BLOGS -->
+  <!-- MODULES -->
   <section class="section">
-    <h2>📝 Latest Module</h2>
+    <h2>📝 Latest Modules</h2>
 
-    <div class="cards">
-      <div class="card" (click)="goTo('/module')">
-        <div class="media placeholder">Module Image</div>
-        <h3>Productivity in Learning</h3>
-        <p>Tips and strategies to improve your learning flow.</p>
+    <ng-container *ngIf="latestModules$ | async as modules; else modulesLoading">
+      <div class="cards" *ngIf="modules.length; else noModules">
+        <div
+          class="card"
+          *ngFor="let module of modules"
+          (click)="goTo('/modules')"
+        >
+          <div class="media placeholder">
+            {{ 'Module' }}
+          </div>
+          <h3>{{ module.title }}</h3>
+          <p>{{ module.description }}</p>
+        </div>
       </div>
+    </ng-container>
 
-      <div class="card" (click)="goTo('/module')">
-        <div class="media placeholder">BModule Image</div>
-        <h3>Building Consistency</h3>
-        <p>Why habits matter more than motivation.</p>
-      </div>
+    <ng-template #modulesLoading>
+      <p class="muted">Loading modules...</p>
+    </ng-template>
 
-       <div class="card" (click)="goTo('/module')">
-        <div class="media placeholder">Module Image</div>
-        <h3>Lean Learning</h3>
-        <p>How to achieve more by learning less.</p>
-      </div>
-    </div>
+    <ng-template #noModules>
+      <p class="muted">No modules yet.</p>
+    </ng-template>
   </section>
 
-  <!-- UPDATES -->
+  <!-- ANNOUNCEMENTS (still static for now) -->
   <section class="section">
     <h2>📢 Announcements</h2>
 
@@ -71,11 +85,10 @@
         <p>Scheduled maintenance will happen this weekend.</p>
       </div>
 
-       <div class="card compact">
+      <div class="card compact">
         <h3>Open for Collaboration</h3>
         <p>We're open for collaboration and feedback.</p>
       </div>
-
     </div>
   </section>
 

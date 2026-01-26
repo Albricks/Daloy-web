@@ -1,10 +1,11 @@
 import {
   Component,
-  ChangeDetectorRef,
-  OnInit
+  OnInit,
+  ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { DiaryApiService, DiarySummary } from '../../../services/diary-api.service';
 
 type ViewMode = 'daily' | 'weekly' | 'monthly';
@@ -36,7 +37,6 @@ export class DiaryComponent implements OnInit {
 
   entries: DiaryEntry[] = [];
 
-  // 🔥 Server-side summaries
   weeklySummary: DiarySummary | null = null;
   monthlySummary: DiarySummary | null = null;
 
@@ -44,8 +44,8 @@ export class DiaryComponent implements OnInit {
   selectedEntry: DiaryEntry | null = null;
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    private diaryApi: DiaryApiService
+    private diaryApi: DiaryApiService,
+    private cdr: ChangeDetectorRef   // ✅ ALIGN WITH VIDEO LIST
   ) {}
 
   // ============================
@@ -53,35 +53,53 @@ export class DiaryComponent implements OnInit {
   // ============================
   ngOnInit() {
     this.loadEntries();
-    this.loadSummaries();
   }
 
+  // --------------------
+  // Load entries (STABLE)
+  // --------------------
   loadEntries() {
     this.isLoading = true;
     this.loadError = null;
+    this.entries = [];
 
-    this.diaryApi.getAll().subscribe({
-      next: (res) => {
-        this.entries = res;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loadError = 'Failed to load diary entries';
-        this.isLoading = false;
-      }
+    this.diaryApi.getAll()
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (res) => {
+          console.log('Diary entries:', res);
+
+          // ✅ Always reassign array (CD friendly)
+          this.entries = [...res];
+
+          // 🔥 Force UI update (KEY FIX)
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.loadError = 'Failed to load diary entries';
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  // --------------------
+  // Load summaries (STABLE)
+  // --------------------
+  loadWeeklySummary() {
+    this.weeklySummary = null;
+
+    this.diaryApi.getWeeklySummary().subscribe(res => {
+      this.weeklySummary = res;
+      this.cdr.detectChanges();   // 🔥 FORCE UI UPDATE
     });
   }
 
-  loadSummaries() {
-    this.diaryApi.getWeeklySummary().subscribe(res => {
-      this.weeklySummary = res;
-      this.cdr.detectChanges();
-    });
+  loadMonthlySummary() {
+    this.monthlySummary = null;
 
     this.diaryApi.getMonthlySummary().subscribe(res => {
       this.monthlySummary = res;
-      this.cdr.detectChanges();
+      this.cdr.detectChanges();   // 🔥 FORCE UI UPDATE
     });
   }
 
@@ -101,10 +119,20 @@ export class DiaryComponent implements OnInit {
   }
 
   /* ============================
-     View toggle
+     View toggle (ALIGNED)
   ============================ */
   setView(mode: ViewMode) {
     this.viewMode = mode;
+
+    if (mode === 'weekly') {
+      this.loadWeeklySummary();
+    }
+
+    if (mode === 'monthly') {
+      this.loadMonthlySummary();
+    }
+
+    // 🔥 Ensure UI updates when switching
     this.cdr.detectChanges();
   }
 
@@ -174,12 +202,21 @@ export class DiaryComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.loadEntries();
-        this.loadSummaries();
+
+        if (this.viewMode === 'weekly') {
+          this.loadWeeklySummary();
+        }
+
+        if (this.viewMode === 'monthly') {
+          this.loadMonthlySummary();
+        }
+
         this.closePanel();
       },
       error: (err) => {
         this.isLoading = false;
         alert(err?.error || 'Failed to save entry');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -192,12 +229,21 @@ export class DiaryComponent implements OnInit {
     this.diaryApi.delete(this.selectedEntry.id).subscribe({
       next: () => {
         this.loadEntries();
-        this.loadSummaries();
+
+        if (this.viewMode === 'weekly') {
+          this.loadWeeklySummary();
+        }
+
+        if (this.viewMode === 'monthly') {
+          this.loadMonthlySummary();
+        }
+
         this.closePanel();
       },
       error: () => {
         this.isLoading = false;
         alert('Failed to delete entry');
+        this.cdr.detectChanges();
       }
     });
   }

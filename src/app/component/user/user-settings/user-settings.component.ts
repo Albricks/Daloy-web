@@ -79,8 +79,12 @@ export class UserSettingsComponent implements OnInit {
 
     const reader = new FileReader();
     reader.onload = () => {
-      this.avatarPreview = reader.result as string;
+      // Force Angular to pick up async FileReader change
+      Promise.resolve().then(() => {
+        this.avatarPreview = reader.result as string;
+      });
     };
+reader.readAsDataURL(file);
     reader.readAsDataURL(file);
   }
 

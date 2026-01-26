@@ -17,32 +17,39 @@
 
   <!-- VIEW TOGGLE -->
   <section class="view-toggle">
-    <button [class.active]="viewMode === 'daily'" (click)="setView('daily')">Daily</button>
-    <button [class.active]="viewMode === 'weekly'" (click)="setView('weekly')">Weekly</button>
-    <button [class.active]="viewMode === 'monthly'" (click)="setView('monthly')">Monthly</button>
+    <button [class.active]="viewMode === 'daily'" (click)="setView('daily')">
+      Daily
+    </button>
+    <button [class.active]="viewMode === 'weekly'" (click)="setView('weekly')">
+      Weekly
+    </button>
+    <button [class.active]="viewMode === 'monthly'" (click)="setView('monthly')">
+      Monthly
+    </button>
   </section>
 
   <!-- SUMMARY -->
   <section class="summary">
 
-    <!-- DAILY -->
-    <ng-container *ngIf="viewMode === 'daily'">
-      <div class="summary-card budget">
-        <span>Budget (Daily)</span>
-        <h2>{{ totalBudget }}</h2>
-      </div>
-      <div class="summary-card spent">
-        <span>Spent (Daily)</span>
-        <h2>{{ totalSpent }}</h2>
-      </div>
-      <div class="summary-card saved">
-        <span>Saved (Daily)</span>
-        <h2>{{ totalSaved }}</h2>
-      </div>
-    </ng-container>
+  <!-- DAILY -->
+  <div *ngIf="viewMode === 'daily'" class="summary-row">
+    <div class="summary-card budget">
+      <span>Budget (Daily)</span>
+      <h2>{{ totalBudget }}</h2>
+    </div>
+    <div class="summary-card spent">
+      <span>Spent (Daily)</span>
+      <h2>{{ totalSpent }}</h2>
+    </div>
+    <div class="summary-card saved">
+      <span>Saved (Daily)</span>
+      <h2>{{ totalSaved }}</h2>
+    </div>
+  </div>
 
-    <!-- WEEKLY -->
-    <ng-container *ngIf="viewMode === 'weekly' && weeklySummary">
+  <!-- WEEKLY -->
+  <div *ngIf="viewMode === 'weekly'" class="summary-row">
+    <ng-container *ngIf="weeklySummary; else weeklyLoading">
       <div class="summary-card budget">
         <span>Budget (Weekly)</span>
         <h2>{{ weeklySummary.totalBudget }}</h2>
@@ -57,8 +64,14 @@
       </div>
     </ng-container>
 
-    <!-- MONTHLY -->
-    <ng-container *ngIf="viewMode === 'monthly' && monthlySummary">
+    <ng-template #weeklyLoading>
+      <div class="summary-card loading">Loading weekly summary…</div>
+    </ng-template>
+  </div>
+
+  <!-- MONTHLY -->
+  <div *ngIf="viewMode === 'monthly'" class="summary-row">
+    <ng-container *ngIf="monthlySummary; else monthlyLoading">
       <div class="summary-card budget">
         <span>Budget (Monthly)</span>
         <h2>{{ monthlySummary.totalBudget }}</h2>
@@ -73,10 +86,16 @@
       </div>
     </ng-container>
 
-  </section>
+    <ng-template #monthlyLoading>
+      <div class="summary-card loading">Loading monthly summary…</div>
+    </ng-template>
+  </div>
 
-  <!-- ENTRIES -->
+</section>
+
+  <!-- ENTRIES (Daily only) -->
   <section class="entries" *ngIf="viewMode === 'daily'">
+
     <article
       class="entry"
       *ngFor="let entry of entries"
@@ -90,18 +109,33 @@
         <span class="saved">Saved: {{ entry.saved }}</span>
       </div>
 
-      <p class="notes" *ngIf="entry.notes">{{ entry.notes }}</p>
+      <p class="notes" *ngIf="entry.notes">
+        {{ entry.notes }}
+      </p>
     </article>
+
+    <div class="empty" *ngIf="!entries.length && !isLoading">
+      No entries yet. Add your first one! 🌱
+    </div>
+
   </section>
 
 </div>
 
 <!-- SLIDE-IN PANEL -->
-<div class="overlay" *ngIf="isPanelOpen" (click)="closePanel()"></div>
+<div
+  class="overlay"
+  *ngIf="isPanelOpen"
+  (click)="closePanel()">
+</div>
 
-<aside class="entry-panel" [class.open]="isPanelOpen">
+<aside
+  class="entry-panel"
+  [class.open]="isPanelOpen"
+  *ngIf="selectedEntry">
+
   <header>
-    <h2>{{ selectedEntry?.id ? 'Edit Entry' : 'Add Entry' }}</h2>
+    <h2>{{ selectedEntry.id ? 'Edit Entry' : 'Add Entry' }}</h2>
     <button (click)="closePanel()">✕</button>
   </header>
 
@@ -109,40 +143,57 @@
 
     <label>
       Budget
-      <input type="number" min="0" step="0.01"
-             [(ngModel)]="selectedEntry!.budget"
-             name="budget" required />
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        [(ngModel)]="selectedEntry.budget"
+        name="budget"
+        required />
     </label>
 
     <label>
       Spent
-      <input type="number" min="0" step="0.01"
-             [(ngModel)]="selectedEntry!.spent"
-             name="spent" required />
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        [(ngModel)]="selectedEntry.spent"
+        name="spent"
+        required />
     </label>
 
     <div class="saved">
-      Saved: {{ selectedEntry!.budget - selectedEntry!.spent }}
+      Saved:
+      {{ selectedEntry.budget - selectedEntry.spent }}
     </div>
 
     <label>
       Notes
-      <textarea [(ngModel)]="selectedEntry!.notes" name="notes"></textarea>
+      <textarea
+        [(ngModel)]="selectedEntry.notes"
+        name="notes">
+      </textarea>
     </label>
 
     <footer>
-      <button type="button" class="danger"
-              *ngIf="selectedEntry?.id"
-              (click)="deleteEntry()">
+      <button
+        type="button"
+        class="danger"
+        *ngIf="selectedEntry.id"
+        (click)="deleteEntry()">
         Delete
       </button>
 
       <div class="actions">
-        <button type="button" (click)="closePanel()">Cancel</button>
+        <button type="button" (click)="closePanel()">
+          Cancel
+        </button>
         <button type="submit" class="primary">
-          {{ selectedEntry?.id ? 'Update' : 'Save' }}
+          {{ selectedEntry.id ? 'Update' : 'Save' }}
         </button>
       </div>
     </footer>
+
   </form>
 </aside>

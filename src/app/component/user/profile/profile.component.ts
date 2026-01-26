@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/auth/auth.service';
+import { MeDto } from '../../../core/auth/models/me.dto';
 
 @Component({
   selector: 'app-profile',
@@ -9,40 +11,13 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent {
+  user: MeDto | null = null;
 
-  user = {
-    name: 'Daloy Learner',
-    email: 'learner@daloy.com',
-    progress: 65
-  };
+  constructor(private authService: AuthService) {
+    this.authService.currentUser$.subscribe(user => {
+      this.user = user;
+    });
+  }
 
-  recentModules = [
-    {
-      title: 'Fundamentals of Cybersecurity',
-      level: 'Beginner',
-      duration: '4 hours',
-      modules: 8,
-      status: 'completed'
-    },
-    {
-      title: 'Advanced Threat Detection',
-      level: 'Advanced',
-      duration: '6 hours',
-      modules: 12,
-      status: 'in-progress'
-    }
-  ];
-
-  recentVideos = [
-    {
-      title: 'Understanding Network Attacks',
-      duration: '12 mins',
-      status: 'completed'
-    },
-    {
-      title: 'Intro to Secure Authentication',
-      duration: '9 mins',
-      status: 'in-progress'
-    }
-  ];
+  // Keep your recentModules & recentVideos if you want them static for now
 }

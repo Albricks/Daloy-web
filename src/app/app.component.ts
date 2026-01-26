@@ -33,13 +33,18 @@ import { AuthService } from './core/auth/auth.service';
     ])
   ]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   showHeader = false;
 
   constructor(
     private router: Router,
     private authService: AuthService
-  ) {
+  ) {}
+
+  ngOnInit(): void {
+    // ✅ Restore auth + user profile on app startup
+    this.authService.loadMe();
+
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {

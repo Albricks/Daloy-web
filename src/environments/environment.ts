@@ -1,4 +1,4 @@
 export const environment = {
 production: false,
-apiUrl: 'https://api.daloy.us/api'
+apiUrl: 'https://localhost:7255/api'
 };

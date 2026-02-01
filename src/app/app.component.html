@@ -1,8 +1,12 @@
-<app-nav-header *ngIf="showHeader"></app-nav-header>
+<div class="app-shell">
+  <app-nav-header *ngIf="showHeader"></app-nav-header>
 
-<main
-  [@routeFade]
-  class="page-container"
->
-  <router-outlet></router-outlet>
-</main>
+  <main
+    [@routeFade]
+    class="page-container"
+  >
+    <router-outlet></router-outlet>
+  </main>
+
+  <app-nav-footer></app-nav-footer>
+</div>

@@ -22,7 +22,6 @@ export class ModulesListComponent implements OnInit {
   isLoading = true;
 
   searchTerm = '';
-  selectedLevel = 'All';
   selectedStatus = 'All';
 
   modules: ModuleListDto[] = [];
@@ -73,13 +72,10 @@ export class ModulesListComponent implements OnInit {
         m.title.toLowerCase().includes(search) ||
         m.description.toLowerCase().includes(search);
 
-      const matchesLevel =
-        this.selectedLevel === 'All' || m.level === this.selectedLevel;
-
       const matchesStatus =
         this.selectedStatus === 'All' || m.status === this.selectedStatus;
 
-      return matchesSearch && matchesLevel && matchesStatus;
+      return matchesSearch && matchesStatus;
     });
   }
 

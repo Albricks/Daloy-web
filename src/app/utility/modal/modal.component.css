@@ -8,35 +8,49 @@
   z-index: 1000;
 }
 
+/* MODAL CONTAINER */
 .modal {
   background: #0b1f4b;
-  width: 90%;
-  max-width: 520px;
+  width: 92%;
+  max-width: 720px; /* 👈 wider modal */
   border-radius: 10px;
   color: #ffffff;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  overflow: hidden; /* 🚫 prevent double scroll */
 }
 
+/* HEADER (FIXED) */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* BODY WRAPPER (NO SCROLL HERE) */
 .modal-body {
-  padding: 16px;
+  padding: 16px 20px;
   font-size: 14px;
   color: #d1d5db;
-  max-height: 60vh;
-  overflow-y: auto;
+  overflow: hidden; /* 🚫 important */
 }
 
+/* ACTUAL SCROLL AREA */
+.modal-body-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px; /* scrollbar spacing */
+}
+
+/* CLOSE BUTTON */
 .close-btn {
   background: none;
   border: none;
   font-size: 22px;
   color: #ffffff;
   cursor: pointer;
+}
+.close-btn:hover {
+  color: #ff6b6b;
 }

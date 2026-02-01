@@ -6,6 +6,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuizService } from '../../../services/quiz.service';
+import { ProgressService } from '../../../services/progress.service';
 import {
   ModuleQuizDto,
   SubmitQuizDto,
@@ -20,11 +21,10 @@ import {
   styleUrls: ['./knowledge-check.component.scss']
 })
 export class KnowledgeCheckComponent implements OnInit {
-  id!: string;
 
+  id!: string; // moduleId
   quiz!: ModuleQuizDto;
 
-  // 🔥 Stable loading pattern (like ModulesListComponent)
   isLoading = true;
   loadError: string | null = null;
 
@@ -44,6 +44,7 @@ export class KnowledgeCheckComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private quizService: QuizService,
+    private progressService: ProgressService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -53,7 +54,7 @@ export class KnowledgeCheckComponent implements OnInit {
   }
 
   // --------------------
-  // Load quiz (STABLE)
+  // Load quiz
   // --------------------
   loadQuiz() {
     this.isLoading = true;
@@ -62,29 +63,27 @@ export class KnowledgeCheckComponent implements OnInit {
 
     this.quizService.getQuizByModule(this.id).subscribe({
       next: quiz => {
-        // Always reassign (change detection friendly)
         this.quiz = { ...quiz };
 
-        // Restore selection
         const firstQ = this.quiz.questions[0];
         this.selectedOptionId =
           this.userAnswers[firstQ.questionId] || null;
 
         this.isLoading = false;
-
-        // 🔥 Force UI update (prevents blank screen)
         this.cdr.detectChanges();
       },
       error: err => {
         console.error('Failed to load quiz', err);
         this.loadError = 'Failed to load quiz. Please refresh.';
         this.isLoading = false;
-
         this.cdr.detectChanges();
       }
     });
   }
 
+  // --------------------
+  // Answer selection
+  // --------------------
   selectOption(optionId: string) {
     const q = this.quiz.questions[this.currentQuestionIndex];
     this.userAnswers[q.questionId] = optionId;
@@ -106,6 +105,9 @@ export class KnowledgeCheckComponent implements OnInit {
     }
   }
 
+  // --------------------
+  // Submit quiz
+  // --------------------
   submitQuiz() {
     const unanswered = this.quiz.questions
       .filter(q => !this.userAnswers[q.questionId]);
@@ -131,17 +133,31 @@ export class KnowledgeCheckComponent implements OnInit {
         this.finished = true;
         this.submitting = false;
 
+      const totalItems = this.quiz.questions.length;
+      const score = result.correctAnswers;
+        
+        this.progressService
+          .submitQuizAttempt(
+            this.id,                     // moduleId
+            this.quiz.quizId,            // quizId
+            score,                // score
+            totalItems            // total questions
+          )
+          .subscribe();
+
         this.cdr.detectChanges();
       },
       error: err => {
         console.error('Failed to submit quiz', err);
         this.submitting = false;
-
         this.cdr.detectChanges();
       }
     });
   }
 
+  // --------------------
+  // Restart
+  // --------------------
   restartQuiz() {
     this.currentQuestionIndex = 0;
     this.selectedOptionId = null;
@@ -149,12 +165,12 @@ export class KnowledgeCheckComponent implements OnInit {
     this.finished = false;
     this.result = null;
 
-    const firstQ = this.quiz.questions[0];
-    this.selectedOptionId = null;
-
     this.cdr.detectChanges();
   }
 
+  // --------------------
+  // Navigation
+  // --------------------
   goToNextModule() {
     this.router.navigate(['/modules']);
   }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NavHeaderComponent } from './layout/nav-header/nav-header.component';
+import { NavFooterComponent } from './layout/nav-footer/nav-footer.component';
 import {
   trigger,
   transition,
@@ -17,7 +18,8 @@ import { AuthService } from './core/auth/auth.service';
   imports: [
     CommonModule,
     RouterOutlet,
-    NavHeaderComponent
+    NavHeaderComponent,
+    NavFooterComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],

@@ -1,14 +1,32 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* FOOTER CONTAINER */
 .nav-footer {
+  background: #0f172a; /* slate / dark bg */
   text-align: center;
-  padding: 12px 8px;
+  padding: 12px 16px;
   font-size: 12px;
   color: #9aa3af;
 }
 
+/* LINKS ROW */
 .links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 
+.links span {
+  opacity: 0.5;
+}
+
+/* LINK BUTTONS */
 .links button {
   background: none;
   border: none;
@@ -20,14 +38,47 @@
 
 .links button:hover {
   color: #ffffff;
+  text-decoration: underline;
 }
 
+/* COPYRIGHT */
 .copy {
-  opacity: 0.8;
+  opacity: 0.7;
+}
+.copy a {
+  color: #9aa3af;
+  text-decoration: none;
 }
 
-:host {
-  display: block;
-  width: 100%;
-  background: red;
+/* SCROLLABLE MODAL BODY */
+.modal-body-scroll {
+  max-height: 60vh;          /* 👈 key part */
+  overflow-y: auto;
+  padding-right: 8px;        /* avoids scrollbar overlap */
+}
+
+/* ABOUT CONTENT */
+.about-daloy p {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.about-daloy hr {
+  margin: 16px 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.about-links ul {
+  padding-left: 16px;
+  margin-bottom: 12px;
+}
+
+.about-links a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.about-links a:hover {
+  text-decoration: underline;
 }

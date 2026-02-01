@@ -1,12 +1,14 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   ChangeDetectorRef
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { ModulesService } from '../../../services/modules.service';
+import { ProgressService } from '../../../services/progress.service';
 import { LessonDto } from '../../../models/lesson.model';
 
 @Component({
@@ -16,7 +18,7 @@ import { LessonDto } from '../../../models/lesson.model';
   templateUrl: './module-read.component.html',
   styleUrls: ['./module-read.component.css']
 })
-export class ModuleReadComponent implements OnInit {
+export class ModuleReadComponent implements OnInit, OnDestroy {
 
   moduleId!: string;
 
@@ -26,15 +28,21 @@ export class ModuleReadComponent implements OnInit {
 
   isLoading = true;
 
+  // --------------------
+  // Progress tracking
+  // --------------------
+  private lessonStartTime?: number; // timestamp
+  private timeSpentSeconds = 0;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private modulesService: ModulesService,
+    private progressService: ProgressService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    // React to route param changes (stable)
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
 
@@ -49,6 +57,11 @@ export class ModuleReadComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    // Final save if user leaves mid-lesson
+    this.saveLessonProgress(false);
+  }
+
   // --------------------
   // Reset state on nav
   // --------------------
@@ -57,6 +70,9 @@ export class ModuleReadComponent implements OnInit {
     this.currentLesson = undefined;
     this.lessonHtml = '';
     this.isLoading = true;
+
+    this.lessonStartTime = undefined;
+    this.timeSpentSeconds = 0;
 
     this.cdr.detectChanges();
   }
@@ -69,12 +85,10 @@ export class ModuleReadComponent implements OnInit {
 
     this.modulesService.getLessons(this.moduleId).subscribe({
       next: lessons => {
-        // Always reassign
         this.lessons = [...lessons];
         this.currentLesson = this.lessons[0]; // default to first
 
         this.cdr.detectChanges();
-
         this.loadLessonContent();
       },
       error: err => {
@@ -91,6 +105,10 @@ export class ModuleReadComponent implements OnInit {
   loadLessonContent() {
     if (!this.currentLesson) return;
 
+    // ⏱ start timing
+    this.lessonStartTime = Date.now();
+    this.timeSpentSeconds = 0;
+
     this.isLoading = true;
     this.lessonHtml = '';
 
@@ -98,46 +116,72 @@ export class ModuleReadComponent implements OnInit {
       .getLessonHtml(this.currentLesson.contentUrl)
       .subscribe({
         next: html => {
-        const contentUrl = this.currentLesson!.contentUrl;
-        const containerSas = this.currentLesson!.containerSas;
+          const contentUrl = this.currentLesson!.contentUrl;
+          const containerSas = this.currentLesson!.containerSas;
 
+          const basePath = contentUrl
+            .split('?')[0]
+            .split('/')
+            .slice(0, -1)
+            .join('/');
 
-        const basePath = contentUrl
-        .split('?')[0]
-        .split('/')
-        .slice(0, -1)
-        .join('/');
+          this.lessonHtml = html.replace(
+            /<img\s+[^>]*src="([^":]+)"/g,
+            (_match, src) => {
+              const normalizedSrc = src.replace(/^images\//, 'Images/');
+              const absoluteWithSas = `${basePath}/${normalizedSrc}${containerSas}`;
+              return _match.replace(src, absoluteWithSas);
+            }
+          );
 
+          this.isLoading = false;
+          this.cdr.detectChanges();
 
-        this.lessonHtml = html.replace(
-        /<img\s+[^>]*src="([^":]+)"/g,
-        (_match, src) => {
-        const normalizedSrc = src.replace(/^images\//, 'Images/');
-        const absoluteWithSas = `${basePath}/${normalizedSrc}${containerSas}`;
-        return _match.replace(src, absoluteWithSas);
-        }
-        );
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 0);
 
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 0);
+          // 🔥 mark lesson started
+          this.saveLessonProgress(false);
         },
         error: err => {
           console.error('Failed to load lesson HTML', err);
           this.lessonHtml = '<p>Error loading lesson content.</p>';
           this.isLoading = false;
-
           this.cdr.detectChanges();
         }
       });
   }
 
   // --------------------
+  // Save lesson progress
+  // --------------------
+  private saveLessonProgress(isCompleted: boolean) {
+    if (!this.currentLesson || !this.lessonStartTime) return;
+
+    const elapsed =
+      Math.floor((Date.now() - this.lessonStartTime) / 1000);
+
+    this.timeSpentSeconds += elapsed;
+    this.lessonStartTime = Date.now(); // reset timer
+
+    this.progressService
+      .updateLessonProgress(
+        this.moduleId,
+        this.currentLesson.id,
+        isCompleted,
+        this.timeSpentSeconds
+      )
+      .subscribe();
+  }
+
+  // --------------------
   // Lesson selection
   // --------------------
   selectLesson(lesson: LessonDto) {
+    // save previous lesson before switching
+    this.saveLessonProgress(false);
+
     this.currentLesson = lesson;
     this.cdr.detectChanges();
     this.loadLessonContent();
@@ -147,43 +191,51 @@ export class ModuleReadComponent implements OnInit {
   // Navigation
   // --------------------
   goBackToPreview() {
+    this.saveLessonProgress(false);
     this.router.navigate(['/modules/preview', this.moduleId]);
   }
 
   exitToModules() {
+    this.saveLessonProgress(false);
     this.router.navigate(['/modules']);
   }
 
-get currentIndex(): number {
-return this.lessons.findIndex(l => l.id === this.currentLesson?.id);
-}
+  get currentIndex(): number {
+    return this.lessons.findIndex(l => l.id === this.currentLesson?.id);
+  }
 
-get hasPrevious(): boolean {
-return this.currentIndex > 0;
-}
+  get hasPrevious(): boolean {
+    return this.currentIndex > 0;
+  }
 
-get hasNext(): boolean {
-return this.currentIndex < this.lessons.length - 1;
-}
+  get hasNext(): boolean {
+    return this.currentIndex < this.lessons.length - 1;
+  }
 
-goToPrevious() {
-if (!this.hasPrevious) return;
-const prev = this.lessons[this.currentIndex - 1];
-this.selectLesson(prev);
-}
+  goToPrevious() {
+    if (!this.hasPrevious) return;
+    this.saveLessonProgress(false);
+    this.selectLesson(this.lessons[this.currentIndex - 1]);
+  }
 
-goToNext() {
-if (!this.hasNext) return;
-const next = this.lessons[this.currentIndex + 1];
-this.selectLesson(next);
-}
+  goToNext() {
+    if (!this.hasNext) return;
+
+    // ✅ mark current lesson completed
+    this.saveLessonProgress(true);
+
+    const next = this.lessons[this.currentIndex + 1];
+    this.selectLesson(next);
+  }
 
   get isLastLesson(): boolean {
-  if (!this.currentLesson) return false;
-  return this.currentLesson.order === this.lessons.length;
+    if (!this.currentLesson) return false;
+    return this.currentLesson.order === this.lessons.length;
   }
-  
+
   goToQuiz() {
+    // ✅ final lesson completion
+    this.saveLessonProgress(true);
     this.router.navigate(['/modules', 'knowledge-check', this.moduleId]);
   }
 }

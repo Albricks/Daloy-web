@@ -10,9 +10,9 @@ import { ModalComponent } from '../../utility/modal/modal.component';
   styleUrls: ['./nav-footer.component.css']
 })
 export class NavFooterComponent {
-  activeModal: 'about' | 'contact' | 'privacy' | null = null;
+  activeModal: 'about-us' | 'contact-us' | 'user-manual' | null = null;
 
-  openModal(type: 'about' | 'contact' | 'privacy'): void {
+  openModal(type: 'about-us' | 'contact-us' | 'user-manual'): void {
     this.activeModal = type;
   }
 

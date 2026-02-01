@@ -6,10 +6,12 @@
     <!-- Player -->
     <div class="player-wrapper">
       <video
+        #videoPlayer
         class="video-player"
         controls
         preload="metadata"
         [src]="video?.streamUrl"
+        (timeupdate)="onTimeUpdate()"
       ></video>
 
       <!-- Theater toggle -->
@@ -24,37 +26,39 @@
 
   </div>
 
-<!-- SIDEBAR -->
-<aside class="sidebar" *ngIf="!theaterMode">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" *ngIf="!theaterMode">
 
-  <h3 class="up-next">Up Next</h3>
+    <h3 class="up-next">Up Next</h3>
 
-  <div
-    class="up-next-item"
-    *ngFor="let v of relatedVideos"
-    (click)="openVideo(v.id)"
-  >
-    <div class="thumb-wrapper">
-      <img
-        class="up-next-thumb"
-        [src]="v.thumbnailUrl"
-        alt="{{ v.title }}"
-      />
-      <span class="thumb-duration">{{ v.duration }}</span>
-    </div>
+    <div
+      class="up-next-item"
+      *ngFor="let v of relatedVideos"
+      (click)="openVideo(v.id)"
+    >
+      <div class="thumb-wrapper">
+        <img
+          class="up-next-thumb"
+          [src]="v.thumbnailUrl"
+          alt="{{ v.title }}"
+        />
+        <span class="thumb-duration">{{ v.duration }}</span>
+      </div>
 
-    <div class="up-next-meta">
-      <div class="name">{{ v.title }}</div>
+      <div class="up-next-meta">
+        <div class="name">{{ v.title }}</div>
+
         <!-- DESCRIPTION -->
         <p class="up-next-desc">
-        {{ v.description }}
+          {{ v.description }}
         </p>
-      <div class="meta-row">
-        <span class="module">Financial Literacy</span>
+
+        <div class="meta-row">
+          <span class="module">Financial Literacy</span>
+        </div>
       </div>
     </div>
-  </div>
 
-</aside>
+  </aside>
 
 </div>

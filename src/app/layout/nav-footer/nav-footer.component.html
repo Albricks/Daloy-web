@@ -1,10 +1,10 @@
 <footer class="nav-footer">
   <div class="links">
-    <button (click)="openModal('about')">About</button>
+    <button (click)="openModal('about-us')"><b>About Daloy</b></button>
     <span>•</span>
-    <button (click)="openModal('contact')">Contact</button>
+    <button (click)="openModal('contact-us')"><b>Contact Us</b></button>
     <span>•</span>
-    <button (click)="openModal('privacy')">Privacy</button>
+    <button (click)="openModal('user-manual')"><b>User Manual</b></button>
   </div>
 
   <div class="copy">
@@ -13,18 +13,88 @@
 </footer>
 
 <!-- ABOUT -->
+<!-- ABOUT -->
 <app-modal
   title="About Daloy"
-  [isOpen]="activeModal === 'about'"
+  [isOpen]="activeModal === 'about-us'"
   (close)="closeModal()"
 >
-  <p>Daloy provides accessible learning tools for modern education.</p>
+  <div class="modal-body-scroll">
+    <section class="about-daloy">
+      <p>
+        <strong>Magandang buhay!</strong> Kami ang mga mag-aaral ng
+        <em>Batsilyer ng Pansekundaryang Edukasyon</em> medyor sa
+        <em>Araling Panlipunan</em> mula sa
+        <strong>Bulacan State University – Bustos Campus</strong>.
+      </p>
+
+      <p>
+        Ang <strong>DALOY</strong>
+        (<em>Digital Approach in Learning to Optimize Youth’s Financial Literacy</em>)
+        ay isang web-based learning platform na aming nilikha upang tulungan ang
+        mga kabataang mag-aaral na maunawaan at maisabuhay ang tamang pamamahala ng pera.
+      </p>
+
+      <p>
+        Binuo ang DALOY bilang tugon sa kakulangan ng kaalaman ng mga mag-aaral sa
+        pagba-budget, pag-iipon, at responsableng paggastos, sa kabila ng kanilang
+        aktibong pakikilahok sa digital at consumer-driven na mundo. Layunin ng
+        platform na gawing mas makabuluhan, praktikal, at kawili-wili ang pagkatuto
+        ng financial literacy.
+      </p>
+
+      <p>
+        Alinsunod sa mga patakaran ng <strong>DepEd</strong> at sa
+        <strong>K–12 curriculum</strong>, nag-aalok ang DALOY ng mga digital modules,
+        interactive at gamified na pagsusulit, maiikling bidyo, at
+        <strong>My DALOY Diary</strong>—isang simpleng talaan ng allowance, gastos,
+        at ipon. Sa pamamagitan nito, natutulungan ang mga mag-aaral na iugnay ang
+        kaalaman sa aktuwal na sitwasyon sa kanilang pang-araw-araw na buhay.
+      </p>
+
+      <p>
+        Ang DALOY ay binuo ng mga pre-service teachers mula sa
+        <strong>Bulacan State University – Bustos Campus</strong> na may layuning
+        hubugin ang mga mag-aaral bilang responsable, mulat, at handang humarap sa
+        mga desisyong pinansyal ngayon at sa hinaharap.
+      </p>
+
+      <hr />
+
+      <div class="about-links">
+        <p><strong>Visit Us:</strong></p>
+        <ul>
+          <li>
+            YouTube:
+            <a
+              href="https://www.youtube.com/@daloywebsite2026"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              @daloywebsite2026
+            </a>
+          </li>
+        </ul>
+
+        <p><strong>Contact Us:</strong></p>
+        <ul>
+          <li>
+            Email:
+            <a href="mailto:daloywebsite@gmail.com">
+              daloywebsite@gmail.com
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
 </app-modal>
+
 
 <!-- CONTACT -->
 <app-modal
   title="Contact Us"
-  [isOpen]="activeModal === 'contact'"
+  [isOpen]="activeModal === 'contact-us'"
   (close)="closeModal()"
 >
   <p>Email: support@daloy.com</p>
@@ -32,11 +102,11 @@
 
 <!-- PRIVACY -->
 <app-modal
-  title="Privacy Policy"
-  [isOpen]="activeModal === 'privacy'"
+  title="User Manual"
+  [isOpen]="activeModal === 'user-manual'"
   (close)="closeModal()"
 >
   <p>
-    We respect your privacy and protect your personal information.
+    We will be having downloadable user manuals soon.
   </p>
 </app-modal>

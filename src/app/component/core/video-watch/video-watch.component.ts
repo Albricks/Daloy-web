@@ -3,12 +3,14 @@ import {
   OnInit,
   ChangeDetectorRef,
   ViewChild,
-  ElementRef
+  ElementRef,
+  OnDestroy
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { VideoService } from '../../../services/video.service';
+import { ProgressService } from '../../../services/progress.service';
 import { VideoWatch } from '../../../models/video-watch.model';
 import { Video } from '../../../models/video.model';
 
@@ -19,7 +21,7 @@ import { Video } from '../../../models/video.model';
   templateUrl: './video-watch.component.html',
   styleUrls: ['./video-watch.component.css']
 })
-export class VideoWatchComponent implements OnInit {
+export class VideoWatchComponent implements OnInit, OnDestroy {
 
   relatedVideos: Video[] = [];
 
@@ -34,9 +36,16 @@ export class VideoWatchComponent implements OnInit {
   @ViewChild('videoPlayer')
   videoPlayer?: ElementRef<HTMLVideoElement>;
 
+  // --------------------
+  // Progress tracking
+  // --------------------
+  private lastReportedSecond = 0;
+  private readonly REPORT_INTERVAL = 10; // seconds
+
   constructor(
     private route: ActivatedRoute,
     private videoService: VideoService,
+    private progressService: ProgressService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -52,9 +61,20 @@ export class VideoWatchComponent implements OnInit {
       }
 
       this.videoId = id;
+      this.lastReportedSecond = 0; // reset progress on video change
+
       this.loadVideo();
       this.loadRelatedVideos();
     });
+  }
+
+  ngOnDestroy() {
+    // Final progress save when leaving the page
+    if (this.lastReportedSecond > 0) {
+      this.progressService
+        .updateVideoProgress(this.videoId, this.lastReportedSecond)
+        .subscribe();
+    }
   }
 
   // --------------------
@@ -70,7 +90,7 @@ export class VideoWatchComponent implements OnInit {
         this.video = v;
         this.loading = false;
 
-        // 🔥 Force UI update (fixes "only updates after click")
+        // 🔥 Force UI update
         this.cdr.detectChanges();
       },
       error: err => {
@@ -111,7 +131,6 @@ export class VideoWatchComponent implements OnInit {
   toggleTheater() {
     this.theaterMode = !this.theaterMode;
 
-    // Let Angular update layout first, then play
     setTimeout(() => {
       const player = this.videoPlayer?.nativeElement;
       if (player) {
@@ -122,5 +141,24 @@ export class VideoWatchComponent implements OnInit {
 
       this.cdr.detectChanges();
     }, 0);
+  }
+
+  // --------------------
+  // VIDEO TIME TRACKING (🔥 THIS IS THE TRIGGER)
+  // --------------------
+  onTimeUpdate() {
+    const player = this.videoPlayer?.nativeElement;
+    if (!player) return;
+
+    const currentSecond = Math.floor(player.currentTime);
+
+    // Report every N seconds only
+    if (currentSecond - this.lastReportedSecond >= this.REPORT_INTERVAL) {
+      this.lastReportedSecond = currentSecond;
+
+      this.progressService
+        .updateVideoProgress(this.videoId, currentSecond)
+        .subscribe();
+    }
   }
 }

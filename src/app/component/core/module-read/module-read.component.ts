@@ -27,12 +27,16 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
   lessonHtml = '';
 
   isLoading = true;
+  loadError: string | null = null;
 
   // --------------------
   // Progress tracking
   // --------------------
-  private lessonStartTime?: number; // timestamp
+  private lessonStartTime?: number;
   private timeSpentSeconds = 0;
+  private saveInProgress = false;
+  private completedLessons = new Set<string>();
+
 
   constructor(
     private route: ActivatedRoute,
@@ -42,14 +46,14 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {}
 
+  // ====================
+  // INIT (FIXED)
+  // ====================
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
 
-      if (!id) {
-        console.error('NO MODULE ID IN ROUTE');
-        return;
-      }
+      if (!id || id === this.moduleId) return;
 
       this.moduleId = id;
       this.resetState();
@@ -62,14 +66,15 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
     this.saveLessonProgress(false);
   }
 
-  // --------------------
-  // Reset state on nav
-  // --------------------
-  resetState() {
+  // ====================
+  // Reset state on module change
+  // ====================
+  private resetState() {
     this.lessons = [];
     this.currentLesson = undefined;
     this.lessonHtml = '';
     this.isLoading = true;
+    this.loadError = null;
 
     this.lessonStartTime = undefined;
     this.timeSpentSeconds = 0;
@@ -77,31 +82,39 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // --------------------
+  // ====================
   // Load lessons list
-  // --------------------
+  // ====================
   loadLessons() {
     this.isLoading = true;
 
     this.modulesService.getLessons(this.moduleId).subscribe({
       next: lessons => {
         this.lessons = [...lessons];
-        this.currentLesson = this.lessons[0]; // default to first
 
+        if (this.lessons.length === 0) {
+          this.loadError = 'No lessons found for this module.';
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.currentLesson = this.lessons[0];
         this.cdr.detectChanges();
         this.loadLessonContent();
       },
       error: err => {
         console.error('Failed to load lessons', err);
+        this.loadError = 'Failed to load lessons.';
         this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  // --------------------
+  // ====================
   // Load lesson HTML
-  // --------------------
+  // ====================
   loadLessonContent() {
     if (!this.currentLesson) return;
 
@@ -129,7 +142,8 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
             /<img\s+[^>]*src="([^":]+)"/g,
             (_match, src) => {
               const normalizedSrc = src.replace(/^images\//, 'Images/');
-              const absoluteWithSas = `${basePath}/${normalizedSrc}${containerSas}`;
+              const absoluteWithSas =
+                `${basePath}/${normalizedSrc}${containerSas}`;
               return _match.replace(src, absoluteWithSas);
             }
           );
@@ -153,32 +167,57 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
       });
   }
 
-  // --------------------
+  // ====================
   // Save lesson progress
-  // --------------------
-  private saveLessonProgress(isCompleted: boolean) {
-    if (!this.currentLesson || !this.lessonStartTime) return;
+  // ====================
+private saveLessonProgress(isCompleted: boolean) {
+  if (
+    !this.currentLesson ||
+    !this.lessonStartTime ||
+    this.saveInProgress
+  ) return;
 
-    const elapsed =
-      Math.floor((Date.now() - this.lessonStartTime) / 1000);
-
-    this.timeSpentSeconds += elapsed;
-    this.lessonStartTime = Date.now(); // reset timer
-
-    this.progressService
-      .updateLessonProgress(
-        this.moduleId,
-        this.currentLesson.id,
-        isCompleted,
-        this.timeSpentSeconds
-      )
-      .subscribe();
+  // Prevent double completion
+  if (
+    isCompleted &&
+    this.completedLessons.has(this.currentLesson.id)
+  ) {
+    return;
   }
 
-  // --------------------
+  const elapsed =
+    Math.floor((Date.now() - this.lessonStartTime) / 1000);
+
+  if (elapsed <= 0 && !isCompleted) return;
+
+  this.saveInProgress = true;
+
+  this.progressService
+    .updateLessonProgress(
+      this.moduleId,
+      this.currentLesson.id,
+      isCompleted,
+      elapsed
+    )
+    .subscribe({
+      complete: () => {
+        this.lessonStartTime = Date.now();
+        this.saveInProgress = false;
+
+        if (isCompleted) {
+          this.completedLessons.add(this.currentLesson!.id);
+        }
+      }
+    });
+}
+
+
+  // ====================
   // Lesson selection
-  // --------------------
+  // ====================
   selectLesson(lesson: LessonDto) {
+    if (lesson.id === this.currentLesson?.id) return;
+
     // save previous lesson before switching
     this.saveLessonProgress(false);
 
@@ -187,9 +226,9 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
     this.loadLessonContent();
   }
 
-  // --------------------
+  // ====================
   // Navigation
-  // --------------------
+  // ====================
   goBackToPreview() {
     this.saveLessonProgress(false);
     this.router.navigate(['/modules/preview', this.moduleId]);
@@ -201,7 +240,9 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
   }
 
   get currentIndex(): number {
-    return this.lessons.findIndex(l => l.id === this.currentLesson?.id);
+    return this.lessons.findIndex(
+      l => l.id === this.currentLesson?.id
+    );
   }
 
   get hasPrevious(): boolean {
@@ -230,7 +271,7 @@ export class ModuleReadComponent implements OnInit, OnDestroy {
 
   get isLastLesson(): boolean {
     if (!this.currentLesson) return false;
-    return this.currentLesson.order === this.lessons.length;
+    return this.currentIndex === this.lessons.length - 1;
   }
 
   goToQuiz() {

@@ -8,7 +8,7 @@
   </div>
 
   <div class="copy">
-    © 2025 Daloy
+    © 2026 Daloy
   </div>
 </footer>
 
@@ -76,15 +76,6 @@
           </li>
         </ul>
 
-        <p><strong>Contact Us:</strong></p>
-        <ul>
-          <li>
-            Email:
-            <a href="mailto:daloywebsite@gmail.com">
-              daloywebsite@gmail.com
-            </a>
-          </li>
-        </ul>
       </div>
     </section>
   </div>
@@ -97,8 +88,59 @@
   [isOpen]="activeModal === 'contact-us'"
   (close)="closeModal()"
 >
-  <p>Email: support@daloy.com</p>
+  <div class="contact-modal">
+
+    <!-- Logo / Brand -->
+    <div class="contact-header">
+      <p class="contact-tagline">
+        <b>Let’s stay connected</b>
+      </p>
+    </div>
+
+    <!-- Contact List -->
+    <ul class="contact-list">
+      <li>
+        <span class="icon">📧</span>
+        <div>
+          <span class="label"><b>Email</b></span>
+          <a href="mailto:daloywebsite@gmail.com">
+            daloywebsite@gmail.com
+          </a>
+        </div>
+      </li>
+
+      <li>
+        <span class="icon">📘</span>
+        <div>
+          <span class="label"><b>Facebook</b></span>
+          <a
+            href="https://www.facebook.com/Daloy2026"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Daloy 2026
+          </a>
+        </div>
+      </li>
+
+      <li>
+        <span class="icon">💬</span>
+        <div>
+          <span class="label"><b>Discord</b></span>
+          <a
+            href="https://discord.gg/daloy2026"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Daloy Learners
+          </a>
+        </div>
+      </li>
+    </ul>
+
+  </div>
 </app-modal>
+
 
 <!-- PRIVACY -->
 <app-modal

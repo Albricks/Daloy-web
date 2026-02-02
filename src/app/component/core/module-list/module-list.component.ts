@@ -37,7 +37,7 @@ export class ModulesListComponent implements OnInit {
   }
 
   // --------------------
-  // Load modules (STABLE)
+  // Load modules (ORDERED)
   // --------------------
   loadModules() {
     this.isLoading = true;
@@ -45,24 +45,24 @@ export class ModulesListComponent implements OnInit {
 
     this.modulesService.getModules().subscribe({
       next: modules => {
-        // Always reassign array (change detection friendly)
-        this.modules = [...modules];
-        this.isLoading = false;
+        // 🔒 Always sort by order (Module 1 → 2 → 3)
+        this.modules = [...modules].sort(
+          (a, b) => a.order - b.order
+        );
 
-        // 🔥 Force UI update (fixes "only updates after click")
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: err => {
         console.error('Failed to load modules', err);
         this.isLoading = false;
-
         this.cdr.detectChanges();
       }
     });
   }
 
   // --------------------
-  // Filtered modules
+  // Filtered modules (ORDER PRESERVED)
   // --------------------
   get filteredModules(): ModuleListDto[] {
     const search = this.searchTerm.toLowerCase();

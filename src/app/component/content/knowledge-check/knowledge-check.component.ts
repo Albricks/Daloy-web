@@ -48,17 +48,38 @@ export class KnowledgeCheckComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  // ====================
+  // INIT (FIXED)
+  // ====================
   ngOnInit() {
-    this.id = this.route.snapshot.paramMap.get('id')!;
-    this.loadQuiz();
+    this.route.paramMap.subscribe(params => {
+      const moduleId = params.get('id');
+
+      if (moduleId && moduleId !== this.id) {
+        this.id = moduleId;
+        this.resetState();
+        this.loadQuiz();
+      }
+    });
   }
 
-  // --------------------
+  // ====================
+  // Reset state between modules
+  // ====================
+  private resetState() {
+    this.currentQuestionIndex = 0;
+    this.selectedOptionId = null;
+    this.userAnswers = {};
+    this.finished = false;
+    this.result = null;
+    this.loadError = null;
+  }
+
+  // ====================
   // Load quiz
-  // --------------------
+  // ====================
   loadQuiz() {
     this.isLoading = true;
-    this.loadError = null;
     this.quiz = undefined as any;
 
     this.quizService.getQuizByModule(this.id).subscribe({
@@ -81,9 +102,9 @@ export class KnowledgeCheckComponent implements OnInit {
     });
   }
 
-  // --------------------
+  // ====================
   // Answer selection
-  // --------------------
+  // ====================
   selectOption(optionId: string) {
     const q = this.quiz.questions[this.currentQuestionIndex];
     this.userAnswers[q.questionId] = optionId;
@@ -105,9 +126,9 @@ export class KnowledgeCheckComponent implements OnInit {
     }
   }
 
-  // --------------------
+  // ====================
   // Submit quiz
-  // --------------------
+  // ====================
   submitQuiz() {
     const unanswered = this.quiz.questions
       .filter(q => !this.userAnswers[q.questionId]);
@@ -133,15 +154,15 @@ export class KnowledgeCheckComponent implements OnInit {
         this.finished = true;
         this.submitting = false;
 
-      const totalItems = this.quiz.questions.length;
-      const score = result.correctAnswers;
-        
+        const totalItems = this.quiz.questions.length;
+        const score = result.correctAnswers;
+
         this.progressService
           .submitQuizAttempt(
-            this.id,                     // moduleId
-            this.quiz.quizId,            // quizId
-            score,                // score
-            totalItems            // total questions
+            this.id,          // moduleId
+            this.quiz.quizId, // quizId
+            score,
+            totalItems
           )
           .subscribe();
 
@@ -155,22 +176,17 @@ export class KnowledgeCheckComponent implements OnInit {
     });
   }
 
-  // --------------------
-  // Restart
-  // --------------------
+  // ====================
+  // Restart quiz
+  // ====================
   restartQuiz() {
-    this.currentQuestionIndex = 0;
-    this.selectedOptionId = null;
-    this.userAnswers = {};
-    this.finished = false;
-    this.result = null;
-
-    this.cdr.detectChanges();
+    this.resetState();
+    this.loadQuiz();
   }
 
-  // --------------------
+  // ====================
   // Navigation
-  // --------------------
+  // ====================
   goToNextModule() {
     this.router.navigate(['/modules']);
   }

@@ -55,8 +55,7 @@ export class ModulePreviewComponent implements OnInit {
       next: module => {
         this.module = module;
         this.isLoading = false;
-
-        // 🔥 Force UI update (fixes "only updates after click")
+        
         this.cdr.detectChanges();
       },
       error: err => {

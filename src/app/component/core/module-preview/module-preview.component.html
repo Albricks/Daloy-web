@@ -20,6 +20,41 @@
         {{ module.description }}
       </p>
 
+      <!-- PREVIEW STANDARDS -->
+      <section
+        class="preview-standards"
+        *ngIf="module.previewStandard as ps"
+      >
+        <h3>Pamantayang Pang-akademiko</h3>
+
+        <div class="standard-block">
+          <strong>Pamantayang Pangnilalaman</strong>
+          <p>{{ ps.pamantayangPangnilalaman }}</p>
+        </div>
+
+        <div class="standard-block">
+          <strong>Pamantayan sa Pagganap</strong>
+          <p>{{ ps.pamantayanSaPagganap }}</p>
+        </div>
+
+        <div class="standard-block">
+          <strong>Mga Kasanayan sa Pagkatuto</strong>
+          <p>{{ ps.mgaKasanayanSaPagkatuto }}</p>
+          <span class="melcs">
+            MELCS Code: {{ ps.melcsCode }}
+          </span>
+        </div>
+      </section>
+
+      <!-- FALLBACK -->
+      <section
+        class="preview-standards empty"
+        *ngIf="!module.previewStandard"
+      >
+        <em>Ang pamantayang pang-akademiko ay ilalagay sa lalong madaling panahon.</em>
+      </section>
+
+      <!-- LEARN -->
       <section class="learn">
         <h3>Mga Layunin: Sa pagtatapos ng aralin, ang mga mag-aaral ay inaasahang:</h3>
         <ul>
@@ -36,8 +71,8 @@
 
       <div class="meta">
         <div>
-          <span>Level</span>
-          <strong>{{ module.level }}</strong>
+          <span>Module</span>
+          <strong>{{ module.order }}</strong>
         </div>
 
         <div>

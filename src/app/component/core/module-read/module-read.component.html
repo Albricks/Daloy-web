@@ -70,17 +70,21 @@
         </button>
       </div>
 
-      <!-- QUIZ CTA (Only for LAST Lesson) -->
+      <!-- SITUATIONAL CTA (Only for LAST Lesson) -->
       <div
         *ngIf="isLastLesson"
         class="quiz-prompt"
       >
-        <h3>Ready to test what you learned?</h3>
-        <p>Take a short quiz to check your understanding.</p>
-        <button class="quiz-btn" (click)="goToQuiz()">
-          Take Quiz
+        <h3>Apply what you’ve learned ✍️</h3>
+        <p>
+          Before taking the quiz, complete a short situational activity to
+          reflect on real-life decisions related to this lesson.
+        </p>
+        <button class="quiz-btn" (click)="goToSituational()">
+          Continue to Activity
         </button>
       </div>
+
 
     </main>
   </div>

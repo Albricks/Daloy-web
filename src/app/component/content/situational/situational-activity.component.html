@@ -1,0 +1,61 @@
+<div *ngIf="loading" class="loading">Loading activity...</div>
+
+<div *ngIf="!loading" class="activity-container">
+  <h2>{{ activity.title }}</h2>
+
+  <!-- PANUTO -->
+  <section class="instruction-box">
+    <h4>Panuto</h4>
+    <p>{{ instructionText }}</p>
+  </section>
+
+  <!-- SITWASYON -->
+  <section class="scenario-box">
+    <h4>Sitwasyon</h4>
+    <p>{{ scenarioText }}</p>
+  </section>
+
+  <form [formGroup]="form">
+    <div
+      class="question-card"
+      *ngFor="let ctrl of answers.controls; let i = index"
+      [formGroup]="asFormGroup(ctrl)"
+    >
+      <h4>Tanong {{ i + 1 }}</h4>
+
+      <p>{{ activity.questions[i].questionText }}</p>
+
+      <textarea
+        formControlName="answerText"
+        rows="5"
+        placeholder="Isulat ang iyong sagot dito..."
+      ></textarea>
+
+      <div
+        class="word-counter"
+        [class.valid]="isValidAnswer(ctrl.value.answerText)"
+        [class.invalid]="!isValidAnswer(ctrl.value.answerText)"
+      >
+        {{ wordCount(ctrl.value.answerText) }} / {{ minWordCount }} words
+      </div>
+    </div>
+
+    <!-- SUBMIT STATUS -->
+    <div *ngIf="isRedirecting" class="redirecting-box">
+    <p class="status-text">Submitting your answers…</p>
+    <p class="countdown-text">
+        Redirecting to quiz in <strong>{{ countdown }}</strong>
+    </p>
+    </div>
+
+    <button
+    type="button"
+    class="submit-btn"
+    [disabled]="submitting || !canSubmit()"
+    (click)="submit()"
+    >
+    {{ submitting ? 'Submitting…' : 'Submit Answers' }}
+    </button>
+
+  </form>
+</div>

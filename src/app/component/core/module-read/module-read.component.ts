@@ -274,9 +274,14 @@ private saveLessonProgress(isCompleted: boolean) {
     return this.currentIndex === this.lessons.length - 1;
   }
 
-  goToQuiz() {
-    // ✅ final lesson completion
-    this.saveLessonProgress(true);
-    this.router.navigate(['/modules', 'knowledge-check', this.moduleId]);
-  }
+goToSituational() {
+  // ✅ final lesson completion
+  this.saveLessonProgress(true);
+
+  // 👉 redirect to situational activity instead of quiz
+  this.router.navigate(
+    ['/modules', 'situational', this.moduleId]
+  );
+}
+
 }

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { SituationalCompleteGuard } from './component/content/situational/situational-complete.guard';
 
 export const routes: Routes = [
   // ---------- PUBLIC ----------
@@ -22,9 +23,8 @@ export const routes: Routes = [
       import('./component/user/reset-password/reset-password.component')
         .then(m => m.ResetPasswordComponent),
   },
-  
-  // ---------- PROTECTED ----------
 
+  // ---------- PROTECTED ----------
   {
     path: 'home',
     canActivate: [authGuard],
@@ -46,14 +46,13 @@ export const routes: Routes = [
       import('./component/core/video-list/video-list.component')
         .then(m => m.VideoListComponent),
   },
-
   {
     path: 'videos/:id',
+    canActivate: [authGuard],
     loadComponent: () =>
-    import('./component/core/video-watch/video-watch.component')
-    .then(m => m.VideoWatchComponent),
-    },
-
+      import('./component/core/video-watch/video-watch.component')
+        .then(m => m.VideoWatchComponent),
+  },
   {
     path: 'diary',
     canActivate: [authGuard],
@@ -75,7 +74,6 @@ export const routes: Routes = [
       import('./component/user/profile/profile.component')
         .then(m => m.ProfileComponent),
   },
-
   {
     path: 'profile-settings',
     canActivate: [authGuard],
@@ -101,9 +99,21 @@ export const routes: Routes = [
         .then(m => m.ModuleReadComponent),
     data: { renderMode: 'csr' }
   },
+
+  // ✅ NEW: Situational Activity (before knowledge check)
+  {
+    path: 'modules/situational/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./component/content/situational/situational-activity.component')
+        .then(m => m.SituationalActivityComponent),
+    data: { renderMode: 'csr' }
+  },
+
+  // 🔐 Knowledge Check (blocked until situational is completed)
   {
     path: 'modules/knowledge-check/:id',
-    canActivate: [authGuard],
+    canActivate: [authGuard, SituationalCompleteGuard],
     loadComponent: () =>
       import('./component/content/knowledge-check/knowledge-check.component')
         .then(m => m.KnowledgeCheckComponent),
@@ -113,5 +123,4 @@ export const routes: Routes = [
   // ---------- DEFAULT ----------
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
-
 ];

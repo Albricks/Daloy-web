@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { SituationalCompleteGuard } from './component/content/situational/situational-complete.guard';
+import { AdminGuard } from './core/auth/admin.guard';
 
 export const routes: Routes = [
   // ---------- PUBLIC ----------
@@ -118,6 +119,15 @@ export const routes: Routes = [
       import('./component/content/knowledge-check/knowledge-check.component')
         .then(m => m.KnowledgeCheckComponent),
     data: { renderMode: 'csr' }
+  },
+
+  // ---------- ADMIN ----------
+  {
+    path: 'admin/dashboard',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./admin/components/admin-dashboard/admin-dashboard.component')
+        .then(m => m.AdminDashboardComponent),
   },
 
   // ---------- DEFAULT ----------

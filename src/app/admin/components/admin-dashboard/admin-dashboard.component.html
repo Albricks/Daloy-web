@@ -1,0 +1,136 @@
+<div class="admin-dashboard">
+
+  <!-- HEADER -->
+  <header class="dashboard-header">
+    <h2>Admin Dashboard</h2>
+    <p class="subtitle">Platform overview & learner progress</p>
+  </header>
+
+  <!-- KPI CARDS -->
+  <section class="kpis" *ngIf="state.kpis; else kpiSkeleton">
+    <div class="kpi-card">
+      <span>Learners</span>
+      <strong>{{ state.kpis.totalLearners }}</strong>
+    </div>
+
+    <div class="kpi-card">
+      <span>Module Completion</span>
+      <strong>{{ state.kpis.avgModuleCompletionPercent | number:'1.0-1' }}%</strong>
+    </div>
+
+    <div class="kpi-card">
+      <span>Situational</span>
+      <strong>{{ state.kpis.situationalCompletionRate }}%</strong>
+    </div>
+
+    <div class="kpi-card">
+      <span>Quiz Pass Rate</span>
+      <strong>{{ state.kpis.quizPassRate }}%</strong>
+    </div>
+
+    <div class="kpi-card">
+      <span>Video Engagement</span>
+      <strong>{{ state.kpis.avgVideoCompletionPercent | number:'1.0-1' }}%</strong>
+    </div>
+  </section>
+
+  <ng-template #kpiSkeleton>
+    <div class="kpis skeleton kpi-skeleton"></div>
+  </ng-template>
+
+  <!-- 📊 CHARTS (THIS WAS MISSING) -->
+  <section class="charts">
+    <div class="chart-card">
+      <h4>Weekly Active Learners</h4>
+      <canvas
+        baseChart
+        [data]="activityChartData"
+        [options]="activityChartOptions"
+        [type]="activityChartType">
+      </canvas>
+    </div>
+
+    <div class="chart-card">
+      <h4>Module Completion Distribution</h4>
+      <canvas
+        baseChart
+        [data]="completionChartData"
+        [options]="completionChartOptions"
+        [type]="completionChartType">
+      </canvas>
+    </div>
+  </section>
+
+  <!-- ▶️ COMPLETION DOUGHNUTS -->
+<section class="charts">
+  <div class="chart-card">
+    <h4>Video Completion</h4>
+    <canvas
+      baseChart
+      [data]="videoDoughnutData"
+      [type]="videoDoughnutType"
+      [options]="videoDoughnutOptions">
+    </canvas>
+  </div>
+
+  <div class="chart-card">
+    <h4>Module Completion</h4>
+    <canvas
+      baseChart
+      [data]="moduleDoughnutData"
+      [type]="moduleDoughnutType"
+      [options]="moduleDoughnutOptions">
+    </canvas>
+  </div>
+</section>
+
+  <!-- MAIN CONTENT -->
+  <section class="content">
+
+    <!-- USER LIST -->
+    <div class="users">
+      <h3>Learners</h3>
+
+      <input
+        type="text"
+        placeholder="Search learner..."
+        [(ngModel)]="state.searchText"
+        (keyup.enter)="onSearch()"
+      />
+
+      <div *ngIf="state.loadingUsers" class="skeleton list"></div>
+
+      <table *ngIf="!state.loadingUsers">
+        <tr
+          *ngFor="let user of state.users"
+          (click)="selectUser(user)"
+          [class.active]="user.userId === state.selectedUserId"
+        >
+          <td>{{ user.fullName }}</td>
+          <td class="muted">{{ user.email }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <div class="detail" *ngIf="state.selectedUser">
+      <header class="detail-header">
+        <h3>{{ state.selectedUser.fullName }}</h3>
+        <button (click)="clearSelection()">✕</button>
+      </header>
+
+      <div *ngIf="state.loadingOverallProgress" class="skeleton detail"></div>
+
+      <table *ngIf="!state.loadingOverallProgress">
+        <tr *ngFor="let row of state.overallProgress">
+          <td>{{ row.moduleTitle }}</td>
+          <td>{{ row.moduleProgressPercent }}%</td>
+          <td>{{ row.quizPassed ? '✔' : '✖' }}</td>
+          <td>{{ row.situationalCompleted ? '✔' : '✖' }}</td>
+          <td>{{ row.avgVideoPercentWatched ?? 0 }}%</td>
+        </tr>
+      </table>
+    </div>
+
+  </section>
+</div>

@@ -13,6 +13,8 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 
 import { routes } from './app.routes';
 import { AuthInterceptor } from './core/auth/auth.interceptor';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,6 +35,7 @@ export const appConfig: ApplicationConfig = {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true
-    }
+    },
+    provideCharts(withDefaultRegisterables())
   ]
 };

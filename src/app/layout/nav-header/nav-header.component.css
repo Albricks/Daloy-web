@@ -147,3 +147,35 @@
   gap: 10px;
   cursor: pointer;
 }
+
+/* =========================
+   ADMIN LINK (SUBTLE EMPHASIS)
+   ========================= */
+.admin-link {
+  color: #e0e7ff; /* slightly brighter */
+  font-weight: 600;
+}
+
+.admin-link::after {
+  background-color: #22d3ee; /* cyan underline for admin */
+}
+
+/* =========================
+   PREVENT UNDERLINE IN PROFILE AREA
+   ========================= */
+.profile .nav-link::after {
+  display: none;
+}
+
+/* =========================
+   SMALL SCREEN SAFETY
+   ========================= */
+@media (max-width: 768px) {
+  .nav-header {
+    padding: 0 16px;
+  }
+
+  .profile-name {
+    display: none; /* keep header clean on mobile */
+  }
+}

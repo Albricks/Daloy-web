@@ -23,42 +23,51 @@
       Home
     </a>
 
-<!-- PROFILE -->
-<div class="profile" *ngIf="user$ | async as user">
+    <!-- PROFILE -->
+    <div class="profile" *ngIf="user$ | async as user">
 
-  <div class="profile-trigger" (click)="toggleDropdown()">
+      <!-- ✅ ADMIN BUTTON -->
+      <a
+        *ngIf="user.isAdmin"
+        routerLink="/admin/dashboard"
+        routerLinkActive="active"
+        class="nav-link admin-link"
+      >
+        Admin
+      </a>
 
-    <!-- Avatar -->
-    <ng-container *ngIf="user.avatarUrl; else fallbackAvatar">
-      <img
-        class="avatar"
-        [src]="user.avatarUrl"
-        alt="User avatar"
-        loading="lazy"
-        (error)="onAvatarError($event)"
-      />
-    </ng-container>
+      <div class="profile-trigger" (click)="toggleDropdown()">
 
-    <!-- Fallback (initial) -->
-    <ng-template #fallbackAvatar>
-      <div class="avatar avatar-fallback">
-        {{ user.userName[0] | uppercase }}
+        <!-- Avatar -->
+        <ng-container *ngIf="user.avatarUrl; else fallbackAvatar">
+          <img
+            class="avatar"
+            [src]="user.avatarUrl"
+            alt="User avatar"
+            loading="lazy"
+            (error)="onAvatarError($event)"
+          />
+        </ng-container>
+
+        <!-- Fallback (initial) -->
+        <ng-template #fallbackAvatar>
+          <div class="avatar avatar-fallback">
+            {{ user.userName[0] | uppercase }}
+          </div>
+        </ng-template>
+
+        <span class="profile-name">
+          {{ user.userName }}
+        </span>
+
       </div>
-    </ng-template>
 
-    <span class="profile-name">
-      {{ user.userName }}
-    </span>
+      <div class="dropdown" *ngIf="isDropdownOpen">
+        <button (click)="goProfile()">Profile</button>
+        <button (click)="goProfileSettings()">Profile Settings</button>
+        <button class="logout" (click)="logout()">Logout</button>
+      </div>
 
-  </div>
-
-  <div class="dropdown" *ngIf="isDropdownOpen">
-    <button (click)="goProfile()">Profile</button>
-    <button (click)="goProfileSettings()">Profile Settings</button>
-    <button class="logout" (click)="logout()">Logout</button>
-  </div>
-
-</div>
-
+    </div>
   </nav>
 </header>

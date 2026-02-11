@@ -1,6 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, tap } from 'rxjs';
+import { BehaviorSubject, map, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -21,6 +21,11 @@ export class AuthService {
   private authReadySubject = new BehaviorSubject<boolean>(false);
   authReady$ = this.authReadySubject.asObservable();
 
+  /** ✅ ADMIN OBSERVABLE (for navbar, UI) */
+  isAdmin$ = this.currentUser$.pipe(
+    map(user => !!user?.isAdmin)
+  );
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -38,57 +43,59 @@ export class AuthService {
   // REGISTER
   // --------------------
   register(data: FormData) {
-  return this.http.post(`${this.apiUrl}/auth/register`, data);
-}
+    return this.http.post(`${this.apiUrl}/auth/register`, data);
+  }
 
   // --------------------
   // LOGIN
   // --------------------
-login(email: string, password: string) {
-  return this.http
-    .post<ApiResponse<AuthResponse>>(
-      `${this.apiUrl}/auth/login`,
-      { email, password }
-    )
-    .pipe(
-      tap(res => {
-        this.storage?.setItem('token', res.data!.accessToken);
-        this.storage?.setItem('refreshToken', res.data!.refreshToken);
-      })
-    );
-}
+  login(email: string, password: string) {
+    return this.http
+      .post<ApiResponse<AuthResponse>>(
+        `${this.apiUrl}/auth/login`,
+        { email, password }
+      )
+      .pipe(
+        tap(res => {
+          this.storage?.setItem('token', res.data!.accessToken);
+          this.storage?.setItem('refreshToken', res.data!.refreshToken);
+        })
+      );
+  }
 
   // --------------------
   // LOAD CURRENT USER (/me)
   // --------------------
-loadMe(): void {
-  const token = this.storage?.getItem('token');
+  loadMe(): void {
+    const token = this.storage?.getItem('token');
 
-  if (!token) {
-    this.authReadySubject.next(true);
-    return;
+    if (!token) {
+      this.authReadySubject.next(true);
+      return;
+    }
+
+    this.http.get<MeDto>(`${this.apiUrl}/auth/me`).subscribe({
+      next: user => {
+        this.currentUserSubject.next(user);
+        this.authReadySubject.next(true);
+      },
+      error: () => {
+        this.logout();
+        this.authReadySubject.next(true);
+      }
+    });
   }
 
-  this.http.get<MeDto>(`${this.apiUrl}/auth/me`).subscribe({
-    next: user => {
-      this.currentUserSubject.next(user);
-      this.authReadySubject.next(true);
-    },
-    error: () => {
-      this.logout();
-      this.authReadySubject.next(true);
-    }
-  });
-}
-
+  // --------------------
+  // UPDATE PROFILE
+  // --------------------
   updateProfile(data: FormData) {
-  return this.http.put(`${this.apiUrl}/profile/me`, data);
-}
+    return this.http.put(`${this.apiUrl}/profile/me`, data);
+  }
 
   // --------------------
   // LOGOUT
   // --------------------
-
   logout(): void {
     this.storage?.removeItem('token');
     this.storage?.removeItem('refreshToken');
@@ -105,5 +112,10 @@ loadMe(): void {
 
   get isLoggedIn(): boolean {
     return !!this.token;
+  }
+
+  /** ✅ SYNC ADMIN CHECK (for guards) */
+  get isAdmin(): boolean {
+    return !!this.currentUserSubject.value?.isAdmin;
   }
 }

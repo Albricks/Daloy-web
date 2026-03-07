@@ -53,10 +53,15 @@ export class AdminDashboardService {
     );
   }
 
-  getCharts() {
-  return this.http.get<AdminDashboardChartsDto>(
-    `${this.baseUrl}/dashboard/charts`
-  );
+getCharts(view: string, fromDate?: string, toDate?: string) {
+
+  let url = `${this.baseUrl}/dashboard/charts?view=${view}`;
+
+  if (fromDate && toDate) {
+    url += `&fromDate=${fromDate}&toDate=${toDate}`;
+  }
+  return this.http.get<AdminDashboardChartsDto>(url);
+
 }
 
 }

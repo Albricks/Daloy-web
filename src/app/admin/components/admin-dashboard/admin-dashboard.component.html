@@ -38,65 +38,141 @@
     <div class="kpis skeleton kpi-skeleton"></div>
   </ng-template>
 
-  <!-- 📊 CHARTS (THIS WAS MISSING) -->
-  <section class="charts">
-    <div class="chart-card">
-      <h4>Weekly Active Learners</h4>
-      <canvas
-        baseChart
-        [data]="activityChartData"
-        [options]="activityChartOptions"
-        [type]="activityChartType">
-      </canvas>
-    </div>
-
-    <div class="chart-card">
-      <h4>Module Completion Distribution</h4>
-      <canvas
-        baseChart
-        [data]="completionChartData"
-        [options]="completionChartOptions"
-        [type]="completionChartType">
-      </canvas>
-    </div>
-  </section>
-
-  <!-- ▶️ COMPLETION DOUGHNUTS -->
 <section class="charts">
+
+  <!-- ACTIVE LEARNERS CHART -->
   <div class="chart-card">
-    <h4>Video Completion</h4>
+
+    <div class="chart-header">
+      <h4>Active Video Learner</h4>
+
+      <select [(ngModel)]="chartView" (change)="changeChartView()">
+        <option value="weekly">Weekly Active Learners</option>
+        <option value="monthly">Monthly Active Learners</option>
+        <option value="range">Custom Date Range</option>
+      </select>
+    </div>
+
+    <!-- RANGE PICKER -->
+    <div *ngIf="chartView === 'range'" class="range-controls">
+      <input type="date" [(ngModel)]="fromDate">
+      <input type="date" [(ngModel)]="toDate">
+      <button (click)="applyRange()">Apply</button>
+    </div>
+
     <canvas
       baseChart
-      [data]="videoDoughnutData"
-      [type]="videoDoughnutType"
-      [options]="videoDoughnutOptions">
+      [data]="activityChartData"
+      [options]="activityChartOptions"
+      [type]="activityChartType">
     </canvas>
+
   </div>
 
-  <div class="chart-card">
-    <h4>Module Completion</h4>
-    <canvas
-      baseChart
-      [data]="moduleDoughnutData"
-      [type]="moduleDoughnutType"
-      [options]="moduleDoughnutOptions">
-    </canvas>
-  </div>
+<!-- AVERAGE QUIZ SCORE -->
+<div class="chart-card">
+
+  <h4>Average Quiz Score</h4>
+
+  <canvas
+    baseChart
+    [data]="completionChartData"
+    [options]="completionChartOptions"
+    [type]="completionChartType">
+  </canvas>
+
+</div>
+
 </section>
 
-  <!-- MAIN CONTENT -->
-  <section class="content">
+<!-- ▶️ COMPLETION DOUGHNUTS -->
+<section class="charts">
 
-    <!-- USER LIST -->
-    <div class="users">
-      <h3>Learners</h3>
+  <!-- VIDEO COMPLETION -->
+  <div class="chart-card">
+    <h4>Video Completion</h4>
 
+    <div class="donut-wrapper">
+
+      <canvas
+        baseChart
+        [data]="videoDoughnutData"
+        [type]="videoDoughnutType"
+        [options]="videoDoughnutOptions">
+      </canvas>
+
+      <!-- CENTER LEGEND -->
+      <div class="donut-legend">
+        <div class="legend-item">
+          <span class="dot dot-v1"></span> 0–25%
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-v2"></span> 26–50%
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-v3"></span> 51–75%
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-v4"></span> 76–100%
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODULE COMPLETION -->
+  <div class="chart-card">
+    <h4>Module Completion</h4>
+
+    <div class="donut-wrapper">
+
+      <canvas
+        baseChart
+        [data]="moduleDoughnutData"
+        [type]="moduleDoughnutType"
+        [options]="moduleDoughnutOptions">
+      </canvas>
+
+      <!-- CENTER LEGEND -->
+      <div class="donut-legend">
+        <div class="legend-item">
+          <span class="dot dot-m1"></span> 0–25%
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-m2"></span> 26–50%
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-m3"></span> 51–75%
+        </div>
+        <div class="legend-item">
+          <span class="dot dot-m4"></span> 76–100%
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<!-- MAIN CONTENT -->
+<section class="content">
+
+  <!-- USER LIST -->
+  <div class="users">
+    <h3>Learners</h3>
+
+    <!-- BIG SEARCH BAR -->
+    <div class="search-wrapper">
       <input
         type="text"
-        placeholder="Search learner..."
+        placeholder="Search learner by name or email..."
         [(ngModel)]="state.searchText"
         (keyup.enter)="onSearch()"
       />
+    </div>
+
+    <!-- SCROLLABLE LIST -->
+    <div class="user-list-container">
 
       <div *ngIf="state.loadingUsers" class="skeleton list"></div>
 
@@ -106,31 +182,80 @@
           (click)="selectUser(user)"
           [class.active]="user.userId === state.selectedUserId"
         >
-          <td>{{ user.fullName }}</td>
+          <td class="name">{{ user.fullName }}</td>
           <td class="muted">{{ user.email }}</td>
         </tr>
       </table>
+
     </div>
+  </div>
 
-    <!-- DETAIL PANEL -->
-    <div class="detail" *ngIf="state.selectedUser">
-      <header class="detail-header">
-        <h3>{{ state.selectedUser.fullName }}</h3>
-        <button (click)="clearSelection()">✕</button>
-      </header>
+<div class="detail">
 
-      <div *ngIf="state.loadingOverallProgress" class="skeleton detail"></div>
+  <!-- EMPTY STATE -->
+  <div *ngIf="!state.selectedUser" class="empty-state">
+    <p>Select a learner to view progress</p>
+  </div>
 
-      <table *ngIf="!state.loadingOverallProgress">
+  <!-- USER DETAIL -->
+  <div *ngIf="state.selectedUser">
+
+    <header class="detail-header">
+      <h3>{{ state.selectedUser.fullName }}</h3>
+      <button (click)="clearSelection()">✕</button>
+    </header>
+
+    <div *ngIf="state.loadingOverallProgress" class="skeleton detail"></div>
+
+    <!-- MODULE PROGRESS -->
+    <table *ngIf="!state.loadingOverallProgress">
+
+      <thead>
+        <tr>
+          <th>Module Title</th>
+          <th>Progress</th>
+          <th>Quiz Passed</th>
+          <th>Situational</th>
+        </tr>
+      </thead>
+
+      <tbody>
         <tr *ngFor="let row of state.overallProgress">
           <td>{{ row.moduleTitle }}</td>
           <td>{{ row.moduleProgressPercent }}%</td>
           <td>{{ row.quizPassed ? '✔' : '✖' }}</td>
           <td>{{ row.situationalCompleted ? '✔' : '✖' }}</td>
-          <td>{{ row.avgVideoPercentWatched ?? 0 }}%</td>
         </tr>
-      </table>
-    </div>
+      </tbody>
 
-  </section>
+    </table>
+
+    <!-- VIDEO PROGRESS
+    <table>
+
+      <thead>
+        <tr>
+          <th>Video Title</th>
+          <th>Progress Percentage</th>
+          <th>Status</th>
+          <th>Last Watched</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let row of state.videoProgress">
+          <td>{{ row.videoTitle }}</td>
+          <td>{{ row.percentWatched }}%</td>
+          <td>{{ row.isCompleted ? '✔' : '✖' }}</td>
+          <td>{{ row.lastWatchedAt | date:'short' }}</td>
+        </tr>
+      </tbody>
+
+    </table> -->
+
+  </div>
+
+</div>
+
+</section>
 </div>

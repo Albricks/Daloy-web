@@ -1,5 +1,6 @@
 import { AdminUserList } from './admin-user-list.model';
 import { AdminUserOverallProgress } from './admin-user-overall-progress.model';
+import { AdminVideoProgressDto } from './admin-video-progress.model';
 import { AdminKpi } from './admin-kpi.model';
 
 export interface AdminDashboardState {
@@ -15,6 +16,7 @@ export interface AdminDashboardState {
   selectedUserId: string | null;
   selectedUser?: AdminUserList | null;
   overallProgress: AdminUserOverallProgress[];
+  videoProgress: AdminVideoProgressDto[]; // For video progress table
 
   // UI state
   loadingOverallProgress: boolean;

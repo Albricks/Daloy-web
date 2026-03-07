@@ -6,7 +6,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartType } from 'chart.js';
+import { ChartConfiguration } from 'chart.js';
 
 import { AdminDashboardService } from '../../services/admin-dashboard.service';
 import { AdminDashboardState } from '../../models/admin-dashboard-state.model';
@@ -34,12 +34,25 @@ export class AdminDashboardComponent implements OnInit {
     selectedUserId: null,
     selectedUser: null,
     overallProgress: [],
-    loadingOverallProgress: false
+    loadingOverallProgress: false,
+    videoProgress: []
   };
+
+  // ======================
+  // CHART VIEW STATE
+  // ======================
+  chartCache: Record<string, AdminDashboardChartsDto> = {};
+
+  chartView: 'weekly' | 'monthly' | 'range' = 'weekly';
+  chartTitle = 'Weekly Active Learners';
+
+  fromDate?: string;
+  toDate?: string;
 
   // ======================
   // LINE CHART
   // ======================
+
   activityChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: []
@@ -84,6 +97,7 @@ export class AdminDashboardComponent implements OnInit {
   // ======================
   // BAR CHART
   // ======================
+
   completionChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
     datasets: []
@@ -117,9 +131,9 @@ export class AdminDashboardComponent implements OnInit {
     }
   };
 
-// ======================
-// DOUGHNUT CHARTS
-// ======================
+  // ======================
+  // DOUGHNUT CHARTS
+  // ======================
 
 videoDoughnutData: ChartConfiguration<'doughnut'>['data'] = {
   labels: [],
@@ -130,14 +144,10 @@ videoDoughnutType: 'doughnut' = 'doughnut';
 
 videoDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
   responsive: true,
-  cutout: '70%',
+  cutout: '68%',
   plugins: {
     legend: {
-      position: 'bottom',
-      labels: {
-        color: '#334155',
-        font: { size: 12 }
-      }
+      display: false
     }
   }
 };
@@ -151,14 +161,10 @@ moduleDoughnutType: 'doughnut' = 'doughnut';
 
 moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
   responsive: true,
-  cutout: '70%',
+  cutout: '68%',
   plugins: {
     legend: {
-      position: 'bottom',
-      labels: {
-        color: '#334155',
-        font: { size: 12 }
-      }
+      display: false
     }
   }
 };
@@ -174,6 +180,10 @@ moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
     this.loadCharts();
   }
 
+  // ======================
+  // KPI DATA
+  // ======================
+
   loadKpis(): void {
     this.dashboardService.getKpis().subscribe({
       next: res => {
@@ -187,94 +197,149 @@ moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
     });
   }
 
-  loadCharts(): void {
-    this.dashboardService.getCharts().subscribe({
-      next: (charts: AdminDashboardChartsDto) => {
-        this.videoDoughnutData = {
-          labels: charts.videoCompletionDistribution.labels,
-          datasets: [
-            {
-              data: charts.videoCompletionDistribution.values,
-              backgroundColor: [
-                '#dbeafe',
-                '#bfdbfe',
-                '#93c5fd',
-                '#2563eb'
-              ]
-            }
-          ]
-        };
+  // ======================
+  // CHART DATA
+  // ======================
 
-        this.moduleDoughnutData = {
-          labels: charts.moduleCompletionDistribution.labels,
-          datasets: [
-            {
-              data: charts.moduleCompletionDistribution.values,
-              backgroundColor: [
-                '#e0e7ff',
-                '#c7d2fe',
-                '#a5b4fc',
-                '#4f46e5'
-              ]
-            }
-          ]
-        };
-        
-        this.activityChartData = {
-          labels: charts.weeklyActiveLearners.labels,
-          datasets: [
-            {
-              data: charts.weeklyActiveLearners.values,
-              label: 'Active Learners',
-              fill: true,
-              tension: 0.4,
-              borderColor: '#2563eb',
-              backgroundColor: 'rgba(37, 99, 235, 0.15)',
-              pointBackgroundColor: '#2563eb',
-              pointBorderColor: '#ffffff',
-              pointRadius: 4,
-              pointHoverRadius: 6
-            }
-          ]
-        };
+loadCharts(): void {
 
-        this.completionChartData = {
-          labels: charts.moduleCompletionDistribution.labels,
-          datasets: [
-            {
-              data: charts.moduleCompletionDistribution.values,
-              label: 'Learners',
-              backgroundColor: [
-                '#dbeafe',
-                '#bfdbfe',
-                '#93c5fd',
-                '#2563eb'
-              ],
-              borderRadius: 6
-            }
-          ]
-        };
+  const cacheKey = `${this.chartView}_${this.fromDate ?? ''}_${this.toDate ?? ''}`;
 
-        this.cdr.detectChanges();
-      }
-    });
+  // ✅ Use cache if available
+  if (this.chartCache[cacheKey]) {
+    this.renderCharts(this.chartCache[cacheKey]);
+    return;
   }
 
+  // otherwise call API
+  this.dashboardService
+    .getCharts(this.chartView, this.fromDate, this.toDate)
+    .subscribe({
+      next: (charts: AdminDashboardChartsDto) => {
+
+        // store in cache
+        this.chartCache[cacheKey] = charts;
+
+        this.renderCharts(charts);
+      }
+    });
+}
+
+renderCharts(charts: AdminDashboardChartsDto) {
+
+  this.videoDoughnutData = {
+    labels: charts.videoCompletionDistribution.labels,
+    datasets: [{
+      data: charts.videoCompletionDistribution.values,
+      backgroundColor: [
+        '#dbeafe',
+        '#bfdbfe',
+        '#93c5fd',
+        '#2563eb'
+      ]
+    }]
+  };
+
+  this.moduleDoughnutData = {
+    labels: charts.moduleCompletionDistribution.labels,
+    datasets: [{
+      data: charts.moduleCompletionDistribution.values,
+      backgroundColor: [
+        '#e0e7ff',
+        '#c7d2fe',
+        '#a5b4fc',
+        '#4f46e5'
+      ]
+    }]
+  };
+
+  this.activityChartData = {
+    labels: charts.weeklyActiveLearners.labels,
+    datasets: [{
+      data: charts.weeklyActiveLearners.values,
+      label: 'Active Learners',
+      fill: true,
+      tension: 0.4,
+      borderColor: '#2563eb',
+      backgroundColor: 'rgba(37, 99, 235, 0.15)',
+      pointBackgroundColor: '#2563eb',
+      pointBorderColor: '#ffffff',
+      pointRadius: 4,
+      pointHoverRadius: 6
+    }]
+  };
+
+  this.completionChartData = {
+    labels: charts.averageQuizPercentage.labels,
+    datasets: [{
+      data: charts.averageQuizPercentage.values,
+      label: 'Average Quiz Score (%)',
+      backgroundColor: [
+        '#dbeafe',
+        '#bfdbfe',
+        '#93c5fd',
+        '#2563eb'
+      ],
+      borderRadius: 6
+    }]
+  };
+
+  this.cdr.detectChanges();
+}
+
+  // ======================
+  // CHART VIEW CHANGE
+  // ======================
+
+  changeChartView() {
+
+    if (this.chartView === 'weekly') {
+      this.chartTitle = 'Weekly Active Learners';
+      this.fromDate = undefined;
+      this.toDate = undefined;
+    }
+
+    if (this.chartView === 'monthly') {
+      this.chartTitle = 'Monthly Active Learners';
+      this.fromDate = undefined;
+      this.toDate = undefined;
+    }
+
+    this.loadCharts();
+  }
+
+  applyRange() {
+    if (!this.fromDate || !this.toDate) return;
+
+    this.chartTitle = 'Active Learners (Custom Range)';
+    this.chartView = 'range';
+
+    this.loadCharts();
+  }
+
+  // ======================
+  // USER LIST
+  // ======================
+
   loadUsers(): void {
+
     this.state.loadingUsers = true;
     this.cdr.detectChanges();
 
     this.dashboardService.searchUsers(this.state.searchText).subscribe({
+
       next: users => {
         this.state.users = users;
         this.state.loadingUsers = false;
         this.cdr.detectChanges();
       },
+
       error: () => {
         this.state.users = [];
         this.state.loadingUsers = false;
         this.cdr.detectChanges();
       }
+
     });
   }
 
@@ -282,27 +347,36 @@ moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
     this.loadUsers();
   }
 
+  // ======================
+  // USER DETAIL PANEL
+  // ======================
+
   selectUser(user: AdminUserList): void {
+
     if (this.state.selectedUserId === user.userId) return;
 
     this.state.selectedUserId = user.userId;
     this.state.selectedUser = user;
     this.state.loadingOverallProgress = true;
     this.state.overallProgress = [];
+
     this.cdr.detectChanges();
 
     this.dashboardService
       .getUserOverallProgress(user.userId)
       .subscribe({
+
         next: progress => {
           this.state.overallProgress = progress;
           this.state.loadingOverallProgress = false;
           this.cdr.detectChanges();
         },
+
         error: () => {
           this.state.loadingOverallProgress = false;
           this.cdr.detectChanges();
         }
+
       });
   }
 
@@ -312,4 +386,5 @@ moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
     this.state.overallProgress = [];
     this.cdr.detectChanges();
   }
+
 }

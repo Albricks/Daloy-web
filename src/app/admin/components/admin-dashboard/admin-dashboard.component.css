@@ -144,4 +144,142 @@ td {
   }
 }
 
+/* SEARCH BAR */
+.search-wrapper {
+  margin-bottom: 12px;
+}
 
+.search-wrapper input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-wrapper input:focus {
+  border-color: #2563eb;
+}
+
+/* SCROLLABLE USER LIST */
+.user-list-container {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+/* Better row interaction */
+.users table tr:hover {
+  background: #f1f5f9;
+}
+
+/* learner name emphasis */
+.name {
+  font-weight: 500;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+thead th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  padding: 10px 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+tbody tr:hover {
+  background: #f8fafc;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.chart-header select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.range-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.range-controls input {
+  padding: 4px 6px;
+}
+
+/* DONUT WRAPPER */
+
+.donut-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: auto;
+}
+
+/* CENTER LEGEND */
+
+.donut-legend {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #334155;
+}
+
+/* LEGEND ROW */
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* DOT */
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* VIDEO COLORS */
+
+.dot-v1 { background: #dbeafe; }
+.dot-v2 { background: #bfdbfe; }
+.dot-v3 { background: #93c5fd; }
+.dot-v4 { background: #2563eb; }
+
+/* MODULE COLORS */
+
+.dot-m1 { background: #e0e7ff; }
+.dot-m2 { background: #c7d2fe; }
+.dot-m3 { background: #a5b4fc; }
+.dot-m4 { background: #4f46e5; }

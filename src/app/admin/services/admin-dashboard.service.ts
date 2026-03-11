@@ -53,15 +53,52 @@ export class AdminDashboardService {
     );
   }
 
-getCharts(view: string, fromDate?: string, toDate?: string) {
+  // =====================================================
+  // DASHBOARD CHARTS
+  // =====================================================
+  getCharts(
+    view: string,
+    fromDate?: string,
+    toDate?: string,
+    moduleId?: string | null,
+    lessonId?: string | null
+  ): Observable<AdminDashboardChartsDto> {
 
-  let url = `${this.baseUrl}/dashboard/charts?view=${view}`;
+    let params = new HttpParams().set('view', view);
 
-  if (fromDate && toDate) {
-    url += `&fromDate=${fromDate}&toDate=${toDate}`;
+    if (fromDate && toDate) {
+      params = params
+        .set('fromDate', fromDate)
+        .set('toDate', toDate);
+    }
+
+    if (moduleId) {
+      params = params.set('moduleId', moduleId);
+    }
+
+    if (lessonId) {
+      params = params.set('lessonId', lessonId);
+    }
+
+    return this.http.get<AdminDashboardChartsDto>(
+      `${this.baseUrl}/dashboard/charts`,
+      { params }
+    );
   }
-  return this.http.get<AdminDashboardChartsDto>(url);
 
+  // =====================================================
+  // MODULES
+  // =====================================================
+  getModules() {
+    return this.http.get<any[]>(
+      `${this.baseUrl}/modules`
+    );
+  }
+
+getVideos() {
+  return this.http.get<any[]>(
+    `${this.baseUrl}/videos`
+  );
 }
 
 }

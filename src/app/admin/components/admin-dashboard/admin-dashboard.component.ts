@@ -39,8 +39,19 @@ export class AdminDashboardComponent implements OnInit {
   };
 
   // ======================
+  // FILTER STATE
+  // ======================
+
+  selectedModuleId: string | null = null;
+  selectedLessonId: string | null = null;
+
+  modules: any[] = [];
+  lessons: any[] = [];
+
+  // ======================
   // CHART VIEW STATE
   // ======================
+
   chartCache: Record<string, AdminDashboardChartsDto> = {};
 
   chartView: 'weekly' | 'monthly' | 'range' = 'weekly';
@@ -75,21 +86,12 @@ export class AdminDashboardComponent implements OnInit {
     },
     scales: {
       x: {
-        grid: {
-          color: '#e5e7eb'
-        },
-        ticks: {
-          color: '#334155'
-        }
+        grid: { color: '#e5e7eb' },
+        ticks: { color: '#334155' }
       },
       y: {
-        grid: {
-          color: '#e5e7eb'
-        },
-        ticks: {
-          color: '#334155',
-          precision: 0
-        }
+        grid: { color: '#e5e7eb' },
+        ticks: { color: '#334155', precision: 0 }
       }
     }
   };
@@ -107,26 +109,13 @@ export class AdminDashboardComponent implements OnInit {
 
   completionChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
-    plugins: {
-      legend: {
-        display: false
-      }
-    },
+    plugins: { legend: { display: false } },
     scales: {
-      x: {
-        ticks: {
-          color: '#334155'
-        }
-      },
+      x: { ticks: { color: '#334155' } },
       y: {
         beginAtZero: true,
-        ticks: {
-          color: '#334155',
-          precision: 0
-        },
-        grid: {
-          color: '#e5e7eb'
-        }
+        ticks: { color: '#334155', precision: 0 },
+        grid: { color: '#e5e7eb' }
       }
     }
   };
@@ -135,39 +124,31 @@ export class AdminDashboardComponent implements OnInit {
   // DOUGHNUT CHARTS
   // ======================
 
-videoDoughnutData: ChartConfiguration<'doughnut'>['data'] = {
-  labels: [],
-  datasets: []
-};
+  videoDoughnutData: ChartConfiguration<'doughnut'>['data'] = {
+    labels: [],
+    datasets: []
+  };
 
-videoDoughnutType: 'doughnut' = 'doughnut';
+  videoDoughnutType: 'doughnut' = 'doughnut';
 
-videoDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
-  responsive: true,
-  cutout: '68%',
-  plugins: {
-    legend: {
-      display: false
-    }
-  }
-};
+  videoDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    cutout: '68%',
+    plugins: { legend: { display: false } }
+  };
 
-moduleDoughnutData: ChartConfiguration<'doughnut'>['data'] = {
-  labels: [],
-  datasets: []
-};
+  moduleDoughnutData: ChartConfiguration<'doughnut'>['data'] = {
+    labels: [],
+    datasets: []
+  };
 
-moduleDoughnutType: 'doughnut' = 'doughnut';
+  moduleDoughnutType: 'doughnut' = 'doughnut';
 
-moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
-  responsive: true,
-  cutout: '68%',
-  plugins: {
-    legend: {
-      display: false
-    }
-  }
-};
+  moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    cutout: '68%',
+    plugins: { legend: { display: false } }
+  };
 
   constructor(
     private dashboardService: AdminDashboardService,
@@ -177,8 +158,52 @@ moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
   ngOnInit(): void {
     this.loadKpis();
     this.loadUsers();
+    this.loadModules();
+    this.loadVideos();   // videos loaded independently
     this.loadCharts();
   }
+
+  // ======================
+  // LOAD MODULES
+  // ======================
+
+  loadModules() {
+    this.dashboardService.getModules().subscribe(res => {
+      this.modules = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  // ======================
+  // LOAD VIDEOS
+  // ======================
+
+  loadVideos() {
+    this.dashboardService.getVideos().subscribe(res => {
+      this.lessons = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+onModuleChange(moduleId: string | null) {
+
+  this.selectedModuleId = moduleId;
+
+  // keep filters independent
+  this.selectedLessonId = null;
+
+  this.loadCharts();
+}
+
+onLessonChange(lessonId: string | null) {
+
+  this.selectedLessonId = lessonId;
+
+  // clear module filter
+  this.selectedModuleId = null;
+
+  this.loadCharts();
+}
 
   // ======================
   // KPI DATA
@@ -203,34 +228,50 @@ moduleDoughnutOptions: ChartConfiguration<'doughnut'>['options'] = {
 
 loadCharts(): void {
 
-  const cacheKey = `${this.chartView}_${this.fromDate ?? ''}_${this.toDate ?? ''}`;
+  const moduleFilter = this.selectedLessonId ? null : this.selectedModuleId;
+  const lessonFilter = this.selectedModuleId ? null : this.selectedLessonId;
 
-  // ✅ Use cache if available
+  const cacheKey =
+    `${this.chartView}_${this.fromDate ?? ''}_${this.toDate ?? ''}_${moduleFilter ?? ''}_${lessonFilter ?? ''}`;
+
   if (this.chartCache[cacheKey]) {
     this.renderCharts(this.chartCache[cacheKey]);
     return;
   }
 
-  // otherwise call API
   this.dashboardService
-    .getCharts(this.chartView, this.fromDate, this.toDate)
+    .getCharts(
+      this.chartView,
+      this.fromDate,
+      this.toDate,
+      moduleFilter,
+      lessonFilter
+    )
     .subscribe({
       next: (charts: AdminDashboardChartsDto) => {
 
-        // store in cache
         this.chartCache[cacheKey] = charts;
 
         this.renderCharts(charts);
       }
     });
 }
-
 renderCharts(charts: AdminDashboardChartsDto) {
 
+  const videoValues =
+    charts.videoCompletionDistribution?.values?.length
+      ? charts.videoCompletionDistribution.values
+      : [0, 0, 0, 0];
+
+  const moduleValues =
+    charts.moduleCompletionDistribution?.values?.length
+      ? charts.moduleCompletionDistribution.values
+      : [0, 0, 0, 0];
+
   this.videoDoughnutData = {
-    labels: charts.videoCompletionDistribution.labels,
+    labels: charts.videoCompletionDistribution.labels ?? ['0–25%', '26–50%', '51–75%', '76–100%'],
     datasets: [{
-      data: charts.videoCompletionDistribution.values,
+      data: videoValues,
       backgroundColor: [
         '#dbeafe',
         '#bfdbfe',
@@ -241,9 +282,9 @@ renderCharts(charts: AdminDashboardChartsDto) {
   };
 
   this.moduleDoughnutData = {
-    labels: charts.moduleCompletionDistribution.labels,
+    labels: charts.moduleCompletionDistribution.labels ?? ['0–25%', '26–50%', '51–75%', '76–100%'],
     datasets: [{
-      data: charts.moduleCompletionDistribution.values,
+      data: moduleValues,
       backgroundColor: [
         '#e0e7ff',
         '#c7d2fe',
@@ -261,11 +302,7 @@ renderCharts(charts: AdminDashboardChartsDto) {
       fill: true,
       tension: 0.4,
       borderColor: '#2563eb',
-      backgroundColor: 'rgba(37, 99, 235, 0.15)',
-      pointBackgroundColor: '#2563eb',
-      pointBorderColor: '#ffffff',
-      pointRadius: 4,
-      pointHoverRadius: 6
+      backgroundColor: 'rgba(37, 99, 235, 0.15)'
     }]
   };
 

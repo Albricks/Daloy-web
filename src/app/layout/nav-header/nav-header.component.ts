@@ -45,10 +45,10 @@ export class NavHeaderComponent implements OnInit {
   img.src = 'assets/default-avatar.png';
   }
 
-  goProfile() {
-    this.closeDropdown();
-    this.router.navigate(['/profile']);
-  }
+  // goProfile() {
+  //   this.closeDropdown();
+  //   this.router.navigate(['/profile']);
+  // }
 
   goProfileSettings() {
     this.closeDropdown();

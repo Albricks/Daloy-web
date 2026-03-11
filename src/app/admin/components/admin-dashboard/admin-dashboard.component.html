@@ -88,9 +88,30 @@
 <!-- ▶️ COMPLETION DOUGHNUTS -->
 <section class="charts">
 
+  <!-- ========================= -->
   <!-- VIDEO COMPLETION -->
+  <!-- ========================= -->
   <div class="chart-card">
-    <h4>Video Completion</h4>
+
+    <div class="chart-header">
+      <h4>Video Completion</h4>
+
+      <!-- VIDEO FILTER -->
+        <select
+          [(ngModel)]="selectedLessonId"
+          (change)="onLessonChange(selectedLessonId)">
+
+          <option [ngValue]="null">All Videos</option>
+
+          <option
+            *ngFor="let v of lessons"
+            [ngValue]="v.id">
+
+            {{ v.title }}
+
+          </option>
+        </select>
+    </div>
 
     <div class="donut-wrapper">
 
@@ -101,28 +122,43 @@
         [options]="videoDoughnutOptions">
       </canvas>
 
-      <!-- CENTER LEGEND -->
       <div class="donut-legend">
-        <div class="legend-item">
-          <span class="dot dot-v1"></span> 0–25%
-        </div>
-        <div class="legend-item">
-          <span class="dot dot-v2"></span> 26–50%
-        </div>
-        <div class="legend-item">
-          <span class="dot dot-v3"></span> 51–75%
-        </div>
-        <div class="legend-item">
-          <span class="dot dot-v4"></span> 76–100%
-        </div>
+        <div class="legend-item"><span class="dot dot-v1"></span> 0–25%</div>
+        <div class="legend-item"><span class="dot dot-v2"></span> 26–50%</div>
+        <div class="legend-item"><span class="dot dot-v3"></span> 51–75%</div>
+        <div class="legend-item"><span class="dot dot-v4"></span> 76–100%</div>
       </div>
 
     </div>
+
   </div>
 
+
+  <!-- ========================= -->
   <!-- MODULE COMPLETION -->
+  <!-- ========================= -->
   <div class="chart-card">
-    <h4>Module Completion</h4>
+
+    <div class="chart-header">
+      <h4>Module Completion</h4>
+
+      <!-- MODULE FILTER -->
+    <select
+      [(ngModel)]="selectedModuleId"
+      (change)="onModuleChange(selectedModuleId)">
+
+      <option [ngValue]="null">All Modules</option>
+
+      <option
+        *ngFor="let m of modules"
+        [ngValue]="m.id">
+
+        {{ m.title }}
+
+      </option>
+
+    </select>
+    </div>
 
     <div class="donut-wrapper">
 
@@ -133,23 +169,15 @@
         [options]="moduleDoughnutOptions">
       </canvas>
 
-      <!-- CENTER LEGEND -->
       <div class="donut-legend">
-        <div class="legend-item">
-          <span class="dot dot-m1"></span> 0–25%
-        </div>
-        <div class="legend-item">
-          <span class="dot dot-m2"></span> 26–50%
-        </div>
-        <div class="legend-item">
-          <span class="dot dot-m3"></span> 51–75%
-        </div>
-        <div class="legend-item">
-          <span class="dot dot-m4"></span> 76–100%
-        </div>
+        <div class="legend-item"><span class="dot dot-m1"></span> 0–25%</div>
+        <div class="legend-item"><span class="dot dot-m2"></span> 26–50%</div>
+        <div class="legend-item"><span class="dot dot-m3"></span> 51–75%</div>
+        <div class="legend-item"><span class="dot dot-m4"></span> 76–100%</div>
       </div>
 
     </div>
+
   </div>
 
 </section>

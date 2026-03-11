@@ -283,3 +283,21 @@ thead {
 .dot-m2 { background: #c7d2fe; }
 .dot-m3 { background: #a5b4fc; }
 .dot-m4 { background: #4f46e5; }
+
+.chart-filters {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.filter-item select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}

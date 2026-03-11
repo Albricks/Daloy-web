@@ -388,34 +388,36 @@ renderCharts(charts: AdminDashboardChartsDto) {
   // USER DETAIL PANEL
   // ======================
 
-  selectUser(user: AdminUserList): void {
+selectUser(user: AdminUserList): void {
 
-    if (this.state.selectedUserId === user.userId) return;
-
-    this.state.selectedUserId = user.userId;
-    this.state.selectedUser = user;
-    this.state.loadingOverallProgress = true;
-    this.state.overallProgress = [];
-
-    this.cdr.detectChanges();
-
-    this.dashboardService
-      .getUserOverallProgress(user.userId)
-      .subscribe({
-
-        next: progress => {
-          this.state.overallProgress = progress;
-          this.state.loadingOverallProgress = false;
-          this.cdr.detectChanges();
-        },
-
-        error: () => {
-          this.state.loadingOverallProgress = false;
-          this.cdr.detectChanges();
-        }
-
-      });
+  if (this.state.selectedUserId === user.userId && !this.state.loadingOverallProgress) {
+    return;
   }
+
+  this.state.selectedUserId = user.userId;
+  this.state.selectedUser = user;
+  this.state.loadingOverallProgress = true;
+  this.state.overallProgress = [];
+
+  this.cdr.detectChanges();
+
+  this.dashboardService
+    .getUserOverallProgress(user.userId)
+    .subscribe({
+
+      next: progress => {
+        this.state.overallProgress = progress;
+        this.state.loadingOverallProgress = false;
+        this.cdr.detectChanges();
+      },
+
+      error: () => {
+        this.state.loadingOverallProgress = false;
+        this.cdr.detectChanges();
+      }
+
+    });
+}
 
   clearSelection(): void {
     this.state.selectedUserId = null;
